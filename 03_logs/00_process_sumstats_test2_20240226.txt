@@ -1,0 +1,92 @@
+Rechner: imbi7
+
+ℹ Loading genepicoloc
+        /data/programs/pipelines/genepicoloc/custom_scripts/source/01_int_functions.R
+value   ?                                                                            
+visible FALSE                                                                        
+        /data/programs/pipelines/genepicoloc/custom_scripts/source/02_params.R
+value   List,9                                                                
+visible FALSE                                                                 
+        /data/programs/pipelines/genepicoloc/custom_scripts/source/03_annotation.R
+value   ?                                                                         
+visible FALSE                                                                     
+[1] "head gwas"
+   CHROM GENPOS          ID ALLELE0 ALLELE1   A1FREQ     INFO     N TEST
+1:     1  10177 rs367896724      AC       A 0.600727 0.464333 37941  ADD
+2:     1  10352 rs201106462      TA       T 0.606646 0.443453 37941  ADD
+3:     1  11008 rs575272151       G       C 0.913588 0.485960 37941  ADD
+4:     1  11012 rs544419019       G       C 0.913588 0.485960 37941  ADD
+5:     1  13110 rs540538026       A       G 0.941527 0.388861 37941  ADD
+6:     1  13116  rs62635286       G       T 0.811110 0.401539 37941  ADD
+          BETA        SE      CHISQ    LOG10P EXTRA
+1:  0.00242365 0.0101133 0.05743200 0.0911925    NA
+2:  0.01534900 0.0103911 2.18190000 0.8549840    NA
+3: -0.05054210 0.0171924 8.64239000 2.4835600    NA
+4: -0.05054210 0.0171924 8.64239000 2.4835600    NA
+5: -0.00193595 0.0231216 0.00701055 0.0299918    NA
+6:  0.02981370 0.0136502 4.77039000 1.5383000    NA
+genome build:  hg37 
+
+## LiftOver sumstats to hg38 (using genepi_liftOver function) ##  
+No 'chr' prefix in the chromosome column found (e.g., '21' should be 'chr21' as required by UCSC liftOver), adding 'chr' prefix. This is a regular message, not a warning.
+Temporary liftOver files will be written to the disk in the current working directory. After the funcion is finished, these files will be automatically removed. If any issues are encountered, ensure that there is enough space on the disk. Usually sumstats file will have a size of 300-600 Mb
+Reading liftover chains
+Mapping coordinates
+There were 4597 unmapped variants (out of 9803742 variants), they will be discarded. Usually this should be 0.01-0.1%. If it is substantially higher, please rerun with rm_tmp_liftOver=F and check the issue
+Merging with new coordinates and performing flip...
+Flipping strand for 22115 variants.
+Starting name matching by position. Different sumstats can have arbitrary allele order. Especially if they are coming from a metal meta-analysis. This function will try to ensure that REF allele is REF, and ALT is ALT (to harmonize with other sumstats). This procedue is not always possible for ambiguous SNPs or indels.If non-standard CHR are present (e.g., chr7_KI270803v1_alt), they will be ignored.
+tabix for CHR 'chr4_GL000008v2_random' returned 0 lines (that is ok for nonstandard chromosomes).
+tabix for CHR 'chr1_KI270766v1_alt' returned 0 lines (that is ok for nonstandard chromosomes).
+tabix for CHR 'chrUn_KI270742v1' returned 0 lines (that is ok for nonstandard chromosomes).
+tabix for CHR 'chr14_GL000009v2_random' returned 0 lines (that is ok for nonstandard chromosomes).
+Name annotation for CHR chrX is done.
+tabix for CHR 'chr2_KI270773v1_alt' returned 0 lines (that is ok for nonstandard chromosomes).
+tabix for CHR 'chr2_KI270776v1_alt' returned 0 lines (that is ok for nonstandard chromosomes).
+Name annotation for CHR chr21 is done.
+Name annotation for CHR chr15 is done.
+Name annotation for CHR chr9 is done.
+Name annotation for CHR chr4 is done.
+Name annotation for CHR chr1 is done.
+tabix for CHR 'chr1_KI270706v1_random' returned 0 lines (that is ok for nonstandard chromosomes).
+tabix for CHR 'chr1_KI270765v1_alt' returned 0 lines (that is ok for nonstandard chromosomes).
+Name annotation for CHR chr12 is done.
+tabix for CHR 'chr2_KI270894v1_alt' returned 0 lines (that is ok for nonstandard chromosomes).
+Name annotation for CHR chr13 is done.
+tabix for CHR 'chr8_KI270821v1_alt' returned 0 lines (that is ok for nonstandard chromosomes).
+tabix for CHR 'chr12_GL877875v1_alt' returned 0 lines (that is ok for nonstandard chromosomes).
+tabix for CHR 'chr15_KI270850v1_alt' returned 0 lines (that is ok for nonstandard chromosomes).
+tabix for CHR 'chr17_KI270857v1_alt' returned 0 lines (that is ok for nonstandard chromosomes).
+tabix for CHR 'chr22_KI270879v1_alt' returned 0 lines (that is ok for nonstandard chromosomes).
+Name annotation for CHR chr11 is done.
+tabix for CHR 'chr1_KI270712v1_random' returned 0 lines (that is ok for nonstandard chromosomes).
+Name annotation for CHR chr8 is done.
+Name annotation for CHR chr2 is done.
+Name annotation for CHR chr3 is done.
+Name annotation for CHR chr14 is done.
+Name annotation for CHR chr5 is done.
+Name annotation for CHR chr20 is done.
+Name annotation for CHR chr16 is done.
+Name annotation for CHR chr7 is done.
+tabix for CHR 'chr8_KI270811v1_alt' returned 0 lines (that is ok for nonstandard chromosomes).
+tabix for CHR 'chr11_KI270927v1_alt' returned 0 lines (that is ok for nonstandard chromosomes).
+tabix for CHR 'chr14_KI270726v1_random' returned 0 lines (that is ok for nonstandard chromosomes).
+tabix for CHR 'chr17_KI270909v1_alt' returned 0 lines (that is ok for nonstandard chromosomes).
+Name annotation for CHR chr18 is done.
+tabix for CHR 'chr14_KI270846v1_alt' returned 0 lines (that is ok for nonstandard chromosomes).
+Name annotation for CHR chr22 is done.
+Name annotation for CHR chr17 is done.
+Name annotation for CHR chr6 is done.
+tabix for CHR 'chr7_KI270803v1_alt' returned 0 lines (that is ok for nonstandard chromosomes).
+Name annotation for CHR chr19 is done.
+tabix for CHR 'chr22_KI270928v1_alt' returned 0 lines (that is ok for nonstandard chromosomes).
+Name annotation for CHR chr10 is done.
+tabix for CHR 'chr2_GL383522v1_alt' returned 0 lines (that is ok for nonstandard chromosomes).
+tabix for CHR 'chr17_KI270862v1_alt' returned 0 lines (that is ok for nonstandard chromosomes).
+tabix for CHR 'chr19_KI270938v1_alt' returned 0 lines (that is ok for nonstandard chromosomes).
+Tabix did not found any matching variants for the following chromosomes: chr1_KI270766v1_alt, chr4_GL000008v2_random, chrUn_KI270742v1, chr1_KI270706v1_random, chr14_GL000009v2_random, chr1_KI270765v1_alt, chr2_KI270773v1_alt, chr2_KI270894v1_alt, chr1_KI270712v1_random, chr2_KI270776v1_alt, chr7_KI270803v1_alt, chr8_KI270811v1_alt, chr8_KI270821v1_alt, chr11_KI270927v1_alt, chr12_GL877875v1_alt, chr14_KI270846v1_alt, chr2_GL383522v1_alt, chr14_KI270726v1_random, chr15_KI270850v1_alt, chr17_KI270862v1_alt, chr17_KI270909v1_alt, chr17_KI270857v1_alt, chr19_KI270938v1_alt, chr22_KI270879v1_alt, chr22_KI270928v1_alt.
+These chromosomes will be discarded
+Here are some matching statistics:
+Assuming that A2 was REF: 9221849 out of 9390052 could have been matched.
+Assuming that A1 was REF: 168203 out of 9390052 could have been matched.
+If one of the options gives a good yield (>80-90%), then one can assume that A1/A2 corresponded indeed REF/ALT (or inversely). If the yield is around 50%, then it is necessary to use names matched-by-position which is already appended as a new column.

@@ -1,0 +1,7 @@
+Rechner: imbi7
+
+Usage: /data/programs/pipelines/GWASannotation/00_scripts/ProGeM_settings.r [options]
+
+/data/programs/pipelines/GWASannotation/00_scripts/ProGeM_settings.r: error: Error in getopt(spec = spec, opt = args) : 
+  flag "output_folder" requires an argument
+

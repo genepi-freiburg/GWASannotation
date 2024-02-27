@@ -1,0 +1,232 @@
+Rechner: imbi3
+
+Loading required package: BiocGenerics
+Loading required package: parallel
+
+Attaching package: ‘BiocGenerics’
+
+The following objects are masked from ‘package:parallel’:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, parApply, parCapply, parLapply,
+    parLapplyLB, parRapply, parSapply, parSapplyLB
+
+The following objects are masked from ‘package:stats’:
+
+    IQR, mad, sd, var, xtabs
+
+The following objects are masked from ‘package:base’:
+
+    anyDuplicated, append, as.data.frame, basename, cbind, colnames,
+    dirname, do.call, duplicated, eval, evalq, Filter, Find, get, grep,
+    grepl, intersect, is.unsorted, lapply, Map, mapply, match, mget,
+    order, paste, pmax, pmax.int, pmin, pmin.int, Position, rank,
+    rbind, Reduce, rownames, sapply, setdiff, sort, table, tapply,
+    union, unique, unsplit, which.max, which.min
+
+Loading required package: S4Vectors
+Loading required package: stats4
+
+Attaching package: ‘S4Vectors’
+
+The following object is masked from ‘package:base’:
+
+    expand.grid
+
+Loading required package: IRanges
+Loading required package: GenomeInfoDb
+Loading required package: GenomicRanges
+Loading required package: SummarizedExperiment
+Loading required package: MatrixGenerics
+Loading required package: matrixStats
+
+Attaching package: ‘MatrixGenerics’
+
+The following objects are masked from ‘package:matrixStats’:
+
+    colAlls, colAnyNAs, colAnys, colAvgsPerRowSet, colCollapse,
+    colCounts, colCummaxs, colCummins, colCumprods, colCumsums,
+    colDiffs, colIQRDiffs, colIQRs, colLogSumExps, colMadDiffs,
+    colMads, colMaxs, colMeans2, colMedians, colMins, colOrderStats,
+    colProds, colQuantiles, colRanges, colRanks, colSdDiffs, colSds,
+    colSums2, colTabulates, colVarDiffs, colVars, colWeightedMads,
+    colWeightedMeans, colWeightedMedians, colWeightedSds,
+    colWeightedVars, rowAlls, rowAnyNAs, rowAnys, rowAvgsPerColSet,
+    rowCollapse, rowCounts, rowCummaxs, rowCummins, rowCumprods,
+    rowCumsums, rowDiffs, rowIQRDiffs, rowIQRs, rowLogSumExps,
+    rowMadDiffs, rowMads, rowMaxs, rowMeans2, rowMedians, rowMins,
+    rowOrderStats, rowProds, rowQuantiles, rowRanges, rowRanks,
+    rowSdDiffs, rowSds, rowSums2, rowTabulates, rowVarDiffs, rowVars,
+    rowWeightedMads, rowWeightedMeans, rowWeightedMedians,
+    rowWeightedSds, rowWeightedVars
+
+Loading required package: Biobase
+Welcome to Bioconductor
+
+    Vignettes contain introductory material; view with
+    'browseVignettes()'. To cite Bioconductor, see
+    'citation("Biobase")', and for packages 'citation("pkgname")'.
+
+
+Attaching package: ‘Biobase’
+
+The following object is masked from ‘package:MatrixGenerics’:
+
+    rowMedians
+
+The following objects are masked from ‘package:matrixStats’:
+
+    anyMissing, rowMedians
+
+Loading required package: Biostrings
+Loading required package: XVector
+
+Attaching package: ‘Biostrings’
+
+The following object is masked from ‘package:base’:
+
+    strsplit
+
+Loading required package: Rsamtools
+Loading required package: AnnotationDbi
+Possible Ensembl SSL connectivity problems detected.
+Please see the 'Connection Troubleshooting' section of the biomaRt vignette
+vignette('accessing_ensembl', package = 'biomaRt')Error in curl::curl_fetch_memory(url, handle = handle) : 
+  SSL certificate problem: certificate has expired
+
+
+Attaching package: ‘data.table’
+
+The following objects are masked from ‘package:GenomicAlignments’:
+
+    first, last, second
+
+The following object is masked from ‘package:SummarizedExperiment’:
+
+    shift
+
+The following object is masked from ‘package:GenomicRanges’:
+
+    shift
+
+The following object is masked from ‘package:IRanges’:
+
+    shift
+
+The following objects are masked from ‘package:S4Vectors’:
+
+    first, second
+
+
+Imported required packages.
+Sentinel and proxy information read and formatted.
+
+-------------------------------------------------------------------
+Beginning bottom-up annotation...
+
+[1] 1
+[1] 2
+[1] 3
+[1] 4
+[1] 5
+[1] 6
+[1] 7
+[1] 8
+[1] 9
+[1] 10
+[1] 11
+[1] 12
+[1] 13
+[1] 14
+[1] 15
+[1] 16
+[1] 17
+[1] 18
+[1] 19
+[1] 20
+[1] 21
+[1] 22
+[1] 23
+[1] 24
+[1] 25
+[1] 26
+[1] 27
+[1] 28
+[1] 29
+[1] 30
+[1] 31
+	- Genes overlapping an LD region have been identified.
+[1] "nearest_genes"
+    LEAD_rsID distance_to_sentinel distance_ranking      ensembl_id hgnc_symbol
+1: rs13267474                72266                1 ENSG00000159167        STC1
+2: rs13267474               220475                2 ENSG00000180053      NKX2-6
+3: rs13267474               244146                3 ENSG00000167034      NKX3-1
+4: rs77924615                    0                1 ENSG00000169340       PDILT
+5: rs77924615                24708                2 ENSG00000169344        UMOD
+6: rs77924615                28523                3 ENSG00000183549       ACSM5
+     gene_biotype
+1: protein_coding
+2: protein_coding
+3: protein_coding
+4: protein_coding
+5: protein_coding
+6: protein_coding
+	- The 3 genes nearest to each sentinel have been identified.
+	- Searching for cis-eQTL targets...
+		Search of Adipose_Subcutaneous.v7 complete!
+		Search of Adipose_Visceral_Omentum.v7 complete!
+		Search of Adrenal_Gland.v7 complete!
+		Search of Artery_Aorta.v7 complete!
+		Search of Artery_Coronary.v7 complete!
+		Search of Artery_Tibial.v7 complete!
+		Search of Brain_Amygdala.v7 complete!
+		Search of Brain_Anterior_cingulate_cortex_BA24.v7 complete!
+		Search of Brain_Caudate_basal_ganglia.v7 complete!
+		Search of Brain_Cerebellar_Hemisphere.v7 complete!
+		Search of Brain_Cerebellum.v7 complete!
+		Search of Brain_Cortex.v7 complete!
+		Search of Brain_Frontal_Cortex_BA9.v7 complete!
+		Search of Brain_Hippocampus.v7 complete!
+		Search of Brain_Hypothalamus.v7 complete!
+		Search of Brain_Nucleus_accumbens_basal_ganglia.v7 complete!
+		Search of Brain_Putamen_basal_ganglia.v7 complete!
+		Search of Brain_Spinal_cord_cervical_c-1.v7 complete!
+		Search of Brain_Substantia_nigra.v7 complete!
+		Search of Breast_Mammary_Tissue.v7 complete!
+		Search of Cells_EBV-transformed_lymphocytes.v7 complete!
+		Search of Cells_Transformed_fibroblasts.v7 complete!
+		Search of Colon_Sigmoid.v7 complete!
+		Search of Colon_Transverse.v7 complete!
+		Search of Esophagus_Gastroesophageal_Junction.v7 complete!
+		Search of Esophagus_Mucosa.v7 complete!
+		Search of Esophagus_Muscularis.v7 complete!
+		Search of Heart_Atrial_Appendage.v7 complete!
+		Search of Heart_Left_Ventricle.v7 complete!
+		Search of Liver.v7 complete!
+		Search of Lung.v7 complete!
+		Search of Minor_Salivary_Gland.v7 complete!
+		Search of Muscle_Skeletal.v7 complete!
+		Search of Nerve_Tibial.v7 complete!
+		Search of Ovary.v7 complete!
+		Search of Pancreas.v7 complete!
+		Search of Pituitary.v7 complete!
+		Search of Prostate.v7 complete!
+		Search of Skin_Not_Sun_Exposed_Suprapubic.v7 complete!
+		Search of Skin_Sun_Exposed_Lower_leg.v7 complete!
+		Search of Small_Intestine_Terminal_Ileum.v7 complete!
+		Search of Spleen.v7 complete!
+		Search of Stomach.v7 complete!
+		Search of Testis.v7 complete!
+		Search of Thyroid.v7 complete!
+		Search of Uterus.v7 complete!
+		Search of Vagina.v7 complete!
+		Search of Whole_Blood.v7 complete!
+	- Cis-eQTL targets have been identified.
+[1] "bottom_up_summariser done"
+[1] "IDENTIFY GENES WITH INCREASED LIKELIHOOD OF HAVING A FUNCTIONAL IMPACT USING VEP ANNOTATION"
+[1] 1167   39
+	- VEP annotations have been integrated.
+
+Error in eval(ei, envir) : object 'coloc_eqtl_required' not found
+Calls: source -> withVisible -> eval -> eval
+Execution halted

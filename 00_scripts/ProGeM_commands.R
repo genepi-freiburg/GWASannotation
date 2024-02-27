@@ -49,14 +49,11 @@ cat("Sentinel and proxy information read and formatted.\n\n")
 sentinel_ranges <- GR_object_creator(sentinel_data$CHR, sentinel_data$START, sentinel_data$END,
                                      sentinel_data$rsID)
 
-# load a TxDb object containing ensembl genes according to build GRCh37 - this is based on the following
-# GTF file: "Homo_sapiens.GRCh37.82.gtf" 
-# load(file.path(base_dir, "GRCh37_genes.RData"))
-load(file.path(base_dir, gene_model_filename))
+# load a TxDb object containing ensembl genes according to build GRCh38 - this is based on the following
+load(file.path(gene_model_filename))
 
-# identify all genes that reside +/-"X"kb from the sentinel variants
+# identify all genes that reside +/- X kb from the sentinel variants
 local_genes <- find_overlapping_genes(sentinel_ranges, ensembl_genes, interval_kb)
-
 # determine distance between each local gene and the corresponding sentinel variant - rank accordingly
 local_genes <- gene_variant_distance_finder(sentinel_ranges, local_genes)
 
@@ -101,13 +98,14 @@ cat("\t- Searching for cis-eQTL targets...\n")
 
 # search cis-eQTL files (NOTE: will take approx 10-15 minutes if all tissues have been chosen)
 cis_eQTL_hits <- cis_eQTL_target_finder(eQTLdata_dir, tissues_of_interest, sentinel_data, proxy_data)
+print(cis_eQTL_hits)
 
 # format the cis_eQTL_hits list; i.e., add rsids and remove .* from ensembl_ids
 cis_eQTL_hits <- cis_eQTL_formatter(sentinel_data, proxy_data, cis_eQTL_hits)
 
 cis_eQTL_targets <- cis_eQTL_gene_extractor(sentinel_data, proxy_data, cis_eQTL_hits)
-cis_eQTL_target_annotation <- gene_annotator(unique(cis_eQTL_targets$ensembl_id))
 
+cis_eQTL_target_annotation <- gene_annotator(unique(cis_eQTL_targets$ensembl_id))
 cat("\t- Cis-eQTL targets have been identified.\n")
 
 
@@ -147,6 +145,85 @@ bottom_up_summary <- cbind(bottom_up_summary, SNP_IMPACT_annotations)
 
 cat("\t- VEP annotations have been integrated.\n\n")
 
+# COLOC data
+# Coloc with eQTL
+
+  # read in coloc eQTL file
+coloc_eqtl_data <- data.table(read.table(file =
+                                         file.path(COLOC_EQTL_filename),
+                                       header = TRUE, quote = NULL, sep = "\t", stringsAsFactors = FALSE))
+
+if (length(eqtl_tissue_col) > 0) {
+coloc_eqtl_data <- coloc_eqtl_data[coloc_eqtl_data[[eqtl_tissue_col]] %in% eqtl_tissues_of_interest, ]
+}
+
+if (length(eqtl_sumstats_2_max_nlog10P_col) > 0) {
+coloc_eqtl_data <- coloc_eqtl_data[coloc_eqtl_data[[eqtl_sumstats_2_max_nlog10P_col]] > eqtl_sumstats_2_max_nlog10P_thresh, ]
+}
+
+if (length(eqtl_PP.H4.abf_col) > 0) {
+coloc_eqtl_data <- coloc_eqtl_data[coloc_eqtl_data[[eqtl_PP.H4.abf_col]] > eqtl_PP.H4.abf_thresh, ]
+}
+
+if (length(coloc_eqtl_gene_type_col) > 0) {
+coloc_eqtl_data <- coloc_eqtl_data[coloc_eqtl_data[[coloc_eqtl_gene_type_col]] %in% biotype_of_interest, ]
+}
+
+# filter out all records that do not have a "cis"
+if (length(eqtl_cis_trans_col)) {
+coloc_eqtl_data <- coloc_eqtl_data[coloc_eqtl_data[[eqtl_cis_trans_col]] %in% eqtl_cis_trans_sel, ]
+}
+
+coloc_eqtl_data <- as.data.frame(coloc_eqtl_data)
+coloc_eqtl_data <- coloc_eqtl_data[!duplicated(coloc_eqtl_data[,
+                                                             c(coloc_eqtl_sentinel_rsID_col, coloc_eqtl_ensembl_gene_id_col)]), ]
+coloc_eqtl_data <- data.table(coloc_eqtl_data)
+
+# formatting so that it can be added to the bottom-up summary
+COLOC_EQTL_annotations <- COLOC_integrator(sentinel_data, bottom_up_summary,
+                                         coloc_eqtl_data, coloc_eqtl_sentinel_rsID_col,
+                                         coloc_eqtl_ensembl_gene_id_col)
+
+# combine bottom_up_summary with the COLOC EQTL annotation
+bottom_up_summary <- cbind(bottom_up_summary, COLOC_EQTL_annotations)
+
+
+cat("\t- Coloc eQTL information have been integrated.\n")
+
+  # read in coloc pQTL file
+coloc_pqtl_data <- data.table(read.table(file =
+                                         file.path(COLOC_PQTL_filename),
+                                       header = TRUE, quote = NULL, sep = "\t", stringsAsFactors = FALSE))
+
+if (length(pqtl_sumstats_2_max_nlog10P_col) > 0) {
+coloc_pqtl_data <- coloc_pqtl_data[coloc_pqtl_data[[pqtl_sumstats_2_max_nlog10P_col]] > eqtl_sumstats_2_max_nlog10P_thresh, ]
+}
+
+if (length(pqtl_PP.H4.abf_col) > 0) {
+coloc_pqtl_data <- coloc_pqtl_data[coloc_pqtl_data[[pqtl_PP.H4.abf_col]] > pqtl_PP.H4.abf_thresh, ]
+}
+
+# filter out all records that do not have a "cis"
+if (length(pqtl_cis_trans_col)) {
+coloc_pqtl_data <- coloc_pqtl_data[coloc_pqtl_data[[pqtl_cis_trans_col]] %in% pqtl_cis_trans_sel, ]
+}
+
+coloc_pqtl_data <- as.data.frame(coloc_pqtl_data)
+coloc_pqtl_data <- coloc_pqtl_data[!duplicated(coloc_pqtl_data[,
+                                                             c(coloc_pqtl_sentinel_rsID_col, coloc_pqtl_ensembl_gene_id_col)]), ]
+coloc_pqtl_data <- data.table(coloc_pqtl_data)
+
+# formatting so that it can be added to the bottom-up summary
+COLOC_PQTL_annotations <- COLOC_integrator(sentinel_data, bottom_up_summary,
+                                         coloc_pqtl_data, coloc_pqtl_sentinel_rsID_col,
+                                         coloc_pqtl_ensembl_gene_id_col, QTL_type = "pQTL")
+
+# combine bottom_up_summary with the COLOC EQTL annotation
+bottom_up_summary <- cbind(bottom_up_summary, COLOC_PQTL_annotations)
+
+
+cat("\t- Coloc pQTL information have been integrated.\n\n")
+
 # classify bottom_up evidence according to source
 # 1 = gene contains a lead or proxy with either a HIGH or MODERATE IMPACT (proximity and cis-eQTL evidence may also be present)
 # 2 = gene is proximal to lead; i.e., nearest or LD overlapping (cis-eQTL evidence may also be present)
@@ -161,19 +238,19 @@ cat("Bottom-up annotation complete!\n\n")
 cat(paste("-------------------------------------------------------------------\n",
           "Beginning top-down annotation...\n\n", sep = ""))
 
-# load in annotated metabolic genes list of genomicRanges objects
-load(file.path(filename_metabolic_genes))
+# load in PoPS result list of genomicRanges objects
+load(file.path(filename_PoPS))
 
 # identify top-down candidates and score each candidate accordingly
-metabolic_overlapping_genes <- top_down_candidate_identifier(sentinel_ranges, annotated_metabolic_genes, 
+PoPS_overlapping_genes <- top_down_candidate_identifier(sentinel_ranges, annotated_PoPS_genes, 
                                                              interval_kb)
 
-write.table(metabolic_overlapping_genes, file = file.path(output_dir, "PoPS_overlapping_genes.txt"),
+write.table(PoPS_overlapping_genes, file = file.path(output_dir, "PoPS_overlapping_genes.txt"),
             quote = FALSE, row.names = FALSE, sep = "\t")
-#print("metabolic_overlapping_genes")
-#print(head(metabolic_overlapping_genes))
+#print("PoPS_overlapping_genes")
+#print(head(PoPS_overlapping_genes))
 
-top_down_scores <- top_down_scorer(sentinel_data, metabolic_overlapping_genes)
+top_down_scores <- top_down_scorer(sentinel_data, PoPS_overlapping_genes)
 #print("top_down_scores")
 #print(head(top_down_scores))
 

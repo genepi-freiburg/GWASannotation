@@ -1,0 +1,75 @@
+Rechner: imbi7
+
+Loading required package: stats4
+Loading required package: BiocGenerics
+Loading required package: parallel
+
+Attaching package: ‘BiocGenerics’
+
+The following objects are masked from ‘package:parallel’:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, parApply, parCapply, parLapply,
+    parLapplyLB, parRapply, parSapply, parSapplyLB
+
+The following objects are masked from ‘package:stats’:
+
+    IQR, mad, sd, var, xtabs
+
+The following objects are masked from ‘package:base’:
+
+    anyDuplicated, append, as.data.frame, basename, cbind, colnames,
+    dirname, do.call, duplicated, eval, evalq, Filter, Find, get, grep,
+    grepl, intersect, is.unsorted, lapply, Map, mapply, match, mget,
+    order, paste, pmax, pmax.int, pmin, pmin.int, Position, rank,
+    rbind, Reduce, rownames, sapply, setdiff, sort, table, tapply,
+    union, unique, unsplit, which.max, which.min
+
+Loading required package: S4Vectors
+
+Attaching package: ‘S4Vectors’
+
+The following object is masked from ‘package:base’:
+
+    expand.grid
+
+Loading required package: IRanges
+Loading required package: GenomeInfoDb
+
+Attaching package: ‘data.table’
+
+The following object is masked from ‘package:GenomicRanges’:
+
+    shift
+
+The following object is masked from ‘package:IRanges’:
+
+    shift
+
+The following objects are masked from ‘package:S4Vectors’:
+
+    first, second
+
+[1] "test2"
+[1] "Pops results (head)"
+           ENSGID  PoPS_Score       Y     Y_proj project_out_covariates_gene
+1 ENSG00000186092 -0.05113279      NA         NA                       False
+2 ENSG00000235249 -0.03284848      NA         NA                       False
+3 ENSG00000185097 -0.03328211      NA         NA                       False
+4 ENSG00000187634  0.22619804 1.03720 0.78056525                        True
+5 ENSG00000188976  0.05469936 0.26430 0.04775526                        True
+6 ENSG00000187961  0.10712285 0.31738 0.15307807                        True
+  feature_selection_gene training_gene
+1                  False         False
+2                  False         False
+3                  False         False
+4                   True          True
+5                   True          True
+6                   True          True
+[1] 18384     6
+[1] 18383     6
+[1] "Add PoPS_Score"
+[1] 18383     7
+[1] "/data/programs/pipelines/GWASannotation/02_output/test2/test2_PoPS.RData"
+
+## Pops make GRanges finished ##

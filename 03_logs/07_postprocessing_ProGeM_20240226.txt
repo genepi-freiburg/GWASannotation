@@ -1,0 +1,651 @@
+Rechner: imbi7
+
+
+Attaching package: ‘dplyr’
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+     LEAD_rsID      ensembl_id  hgnc_symbol   gene_biotype nearest
+1   rs13267474 ENSG00000159167         STC1 protein_coding       1
+2   rs13267474 ENSG00000180053       NKX2-6 protein_coding       0
+3   rs13267474 ENSG00000167034       NKX3-1 protein_coding       0
+4   rs77924615 ENSG00000169340        PDILT protein_coding       1
+5   rs77924615 ENSG00000183549        ACSM5 protein_coding       0
+6   rs77924615 ENSG00000169344         UMOD protein_coding       0
+7    rs9895661 ENSG00000175155        YPEL2 protein_coding       1
+8    rs9895661 ENSG00000108406        DHX40 protein_coding       0
+9    rs9895661 ENSG00000141367         CLTC protein_coding       0
+10   rs9895661 ENSG00000121068         TBX2 protein_coding       0
+11    rs744103 ENSG00000112715        VEGFA protein_coding       1
+12    rs744103 ENSG00000096080      MRPS18A protein_coding       0
+13    rs744103 ENSG00000172426        RSPH9 protein_coding       0
+14    rs807624 ENSG00000079785         DDX1 protein_coding       1
+15    rs807624 ENSG00000134323         MYCN protein_coding       0
+16    rs807624 ENSG00000151779         NBAS protein_coding       0
+17  rs77683480 ENSG00000185013       NT5C1B protein_coding       1
+18  rs77683480 ENSG00000250741 NT5C1B-RDH14 protein_coding       0
+19  rs77683480 ENSG00000240857        RDH14 protein_coding       0
+20   rs2306623 ENSG00000077092         RARB protein_coding       1
+21   rs2306623 ENSG00000077097        TOP2B protein_coding       0
+22   rs2306623 ENSG00000151092        NGLY1 protein_coding       0
+23  rs73089698 ENSG00000050344       NFE2L3 protein_coding       1
+24  rs73089698 ENSG00000122566    HNRNPA2B1 protein_coding       0
+25  rs73089698 ENSG00000122565         CBX3 protein_coding       0
+26  rs62462685 ENSG00000127947       PTPN12 protein_coding       1
+27  rs62462685 ENSG00000186088         GSAP protein_coding       0
+28  rs62462685 ENSG00000135205      CCDC146 protein_coding       0
+29  rs62462685 ENSG00000135211       TMEM60 protein_coding       0
+30  rs62462685 ENSG00000187257       RSBN1L protein_coding       0
+31   rs2047866 ENSG00000169758      TMEM266 protein_coding       1
+32   rs2047866 ENSG00000140374         ETFA protein_coding       0
+33   rs2047866 ENSG00000169752         NRG4 protein_coding       0
+34   rs2047866 ENSG00000140386       SCAPER protein_coding       0
+35   rs2047866 ENSG00000159556         ISL2 protein_coding       0
+36   rs2047866 ENSG00000140400       MAN2C1 protein_coding       0
+37   rs2047866 ENSG00000140367       UBE2Q2 protein_coding       0
+38  rs10846156 ENSG00000134533         RERG protein_coding       1
+39  rs10846156 ENSG00000151490        PTPRO protein_coding       0
+40  rs10846156 ENSG00000151491         EPS8 protein_coding       0
+41  rs12537822 ENSG00000164690          SHH protein_coding       1
+42  rs12537822 ENSG00000184863        RBM33 protein_coding       0
+44   rs2581066 ENSG00000134324        LPIN1 protein_coding       1
+45   rs2581066 ENSG00000169006        NTSR2 protein_coding       0
+46   rs2581066 ENSG00000196208        GREB1 protein_coding       0
+47   rs2033149 ENSG00000151150         ANK3 protein_coding       1
+48   rs2033149 ENSG00000108091        CCDC6 protein_coding       0
+49   rs2033149 ENSG00000122870        BICC1 protein_coding       0
+50   rs9329221 ENSG00000175806         MSRA protein_coding       1
+51   rs9329221 ENSG00000253649       PRSS51 protein_coding       0
+52   rs9329221 ENSG00000184647       PRSS55 protein_coding       0
+53   rs9329221 ENSG00000104643        MTMR9 protein_coding       0
+54   rs2943636 ENSG00000081052       COL4A4 protein_coding       1
+55   rs2943636 ENSG00000169031       COL4A3 protein_coding       0
+56   rs2943636 ENSG00000144468       RHBDD1 protein_coding       0
+57   rs2943636 ENSG00000169047         IRS1 protein_coding       0
+58   rs1289022 ENSG00000143228         NUF2 protein_coding       1
+59   rs1289022 ENSG00000143248         RGS5 protein_coding       0
+60  rs79186933 ENSG00000177483        RBM44 protein_coding       1
+61  rs79186933 ENSG00000124831      LRRFIP1 protein_coding       0
+62  rs79186933 ENSG00000132329        RAMP1 protein_coding       0
+63 rs149197133 ENSG00000224578    HNRNPA1L3 protein_coding       1
+64    rs863678 ENSG00000170144      HNRNPA3 protein_coding       1
+65    rs863678 ENSG00000116044       NFE2L2 protein_coding       0
+66    rs863678 ENSG00000018510         AGPS protein_coding       0
+67   rs7449794 ENSG00000170927        PKHD1 protein_coding       1
+68  rs10767873 ENSG00000170959        DCDC1 protein_coding       1
+69  rs10767873 ENSG00000066382       MPPED2 protein_coding       0
+70  rs10767873 ENSG00000152219      ARL14EP protein_coding       0
+71   rs7826238 ENSG00000275342        PRAG1 protein_coding       1
+72   rs7826238 ENSG00000253958       CLDN23 protein_coding       0
+73   rs7826238 ENSG00000254229    FAM90A12P protein_coding       0
+74   rs7826238 ENSG00000104626         ERI1 protein_coding       0
+75   rs7826238 ENSG00000147324       MFHAS1 protein_coding       0
+76  rs13179493 ENSG00000153071         DAB2 protein_coding       1
+77  rs13179493 ENSG00000113600           C9 protein_coding       0
+78  rs13179493 ENSG00000082074         FYB1 protein_coding       0
+79  rs62114506 ENSG00000035115       SH3YL1 protein_coding       1
+80  rs62114506 ENSG00000143727         ACP1 protein_coding       0
+81  rs62114506 ENSG00000189292       ALKAL2 protein_coding       0
+82  rs11042608 ENSG00000167244         IGF2 protein_coding       1
+84  rs11042608 ENSG00000129965     INS-IGF2 protein_coding       0
+85  rs11042608 ENSG00000110619        CARS1 protein_coding       0
+86  rs10681907 ENSG00000137801        THBS1 protein_coding       1
+87  rs10681907 ENSG00000150667        FSIP1 protein_coding       0
+88   rs2870237 ENSG00000138764        CCNG2 protein_coding       1
+89   rs2870237 ENSG00000156234       CXCL13 protein_coding       0
+90   rs2870237 ENSG00000118816         CCNI protein_coding       0
+91   rs2870237 ENSG00000163749      CCDC158 protein_coding       0
+92   rs2870237 ENSG00000118804        STBD1 protein_coding       0
+93   rs2870237 ENSG00000189157       FAM47E protein_coding       0
+94   rs2870237 ENSG00000169248       CXCL11 protein_coding       0
+95  rs35379140 ENSG00000124782        RREB1 protein_coding       1
+96  rs35379140 ENSG00000124783         SSR1 protein_coding       0
+97  rs35379140 ENSG00000164304        CAGE1 protein_coding       0
+   second_nearest third_nearest LD_overlapping lead_eQTL proxy_eQTL lead_IMPACT
+1               0             0              0         0          0           0
+2               1             0              0         0          0           0
+3               0             1              0         0          0           0
+4               0             0              1         1          0           0
+5               1             0              0         0          0           0
+6               0             1              0         0          0           0
+7               0             0              0         0          0           0
+8               1             0              0         0          0           0
+9               0             1              0         0          0           0
+10              0             0              0         1          1           0
+11              0             0              0         1          1           0
+12              1             0              0         0          0           0
+13              0             1              0         0          0           0
+14              0             0              0         1          1           0
+15              1             0              0         0          0           0
+16              0             1              0         0          0           0
+17              0             0              0         0          0           0
+18              1             0              0         0          0           0
+19              0             1              0         0          0           0
+20              0             0              1         0          0           0
+21              1             0              0         0          0           0
+22              0             1              0         0          0           0
+23              0             0              0         0          0           0
+24              1             0              0         0          0           0
+25              0             1              0         0          0           0
+26              0             0              1         1          1           0
+27              1             0              0         0          0           0
+28              0             1              0         0          0           0
+29              0             0              0         1          1           0
+30              0             0              0         0          1           0
+31              0             0              1         0          0           0
+32              1             0              1         0          0           0
+33              0             1              0         0          1           0
+34              0             0              1         0          0           0
+35              0             0              1         0          0           0
+36              0             0              0         1          1           0
+37              0             0              0         1          1           0
+38              0             0              1         0          0           0
+39              1             0              1         0          0           0
+40              0             1              0         0          0           0
+41              0             0              0         0          0           0
+42              1             0              0         0          0           0
+44              0             0              0         0          0           0
+45              1             0              0         0          0           0
+46              0             1              0         0          0           0
+47              0             0              1         0          0           0
+48              1             0              0         0          0           0
+49              0             0              0         1          1           0
+50              0             0              1         1          1           0
+51              1             0              0         0          1           0
+52              0             1              0         0          0           0
+53              0             0              0         0          1           0
+54              0             0              1         0          0           0
+55              1             0              0         0          0           0
+56              0             1              0         0          0           0
+57              0             0              0         1          1           0
+58              0             0              0         0          0           0
+59              1             0              0         0          0           0
+60              0             0              1         0          0           0
+61              1             0              0         0          0           0
+62              0             1              0         0          0           0
+63              0             0              0         0          0           0
+64              0             0              0         0          0           0
+65              1             0              0         0          0           0
+66              0             1              0         0          0           0
+67              0             0              0         0          0           0
+68              0             0              0         0          0           0
+69              1             0              0         0          0           0
+70              0             1              0         0          0           0
+71              0             0              1         0          0           0
+72              1             0              0         1          1           0
+73              0             1              0         0          0           0
+74              0             0              0         1          1           0
+75              0             0              0         1          1           0
+76              0             0              1         0          0           0
+77              1             0              0         0          0           0
+78              0             1              0         0          0           0
+79              0             0              1         1          0           0
+80              1             0              0         1          0           0
+81              0             1              0         1          0           0
+82              0             0              0         0          0           0
+84              0             1              0         0          0           0
+85              0             0              0         1          0           0
+86              0             0              0         0          0           0
+87              1             0              0         0          0           0
+88              0             0              1         0          0           0
+89              1             0              0         0          0           0
+90              0             1              0         0          0           0
+91              0             0              0         0          1           0
+92              0             0              0         0          1           0
+93              0             0              0         0          1           0
+94              0             0              0         0          1           0
+95              0             0              1         0          0           0
+96              1             0              0         0          0           0
+97              0             1              0         0          0           0
+   proxy_IMPACT coloc_eQTL coloc_pQTL category
+1             0          0          0        2
+2             0          0          0        2
+3             0          0          0        2
+4             0          0          0        2
+5             0          0          0        2
+6             0          1          0        2
+7             0          0          0        2
+8             0          0          0        2
+9             0          0          0        2
+10            0          0          0        3
+11            0          0          0        2
+12            0          0          0        2
+13            0          0          0        2
+14            0          1          0        2
+15            0          0          0        2
+16            0          0          0        2
+17            0          0          0        2
+18            0          0          0        2
+19            0          0          0        2
+20            0          0          0        2
+21            0          0          0        2
+22            0          0          0        2
+23            0          0          0        2
+24            0          0          0        2
+25            0          0          0        2
+26            0          1          0        2
+27            0          0          0        2
+28            0          0          0        2
+29            0          0          0        3
+30            0          0          0        3
+31            0          0          0        2
+32            0          0          0        2
+33            0          0          0        2
+34            0          0          0        2
+35            0          0          0        2
+36            0          0          0        3
+37            0          1          0        3
+38            0          0          0        2
+39            0          0          0        2
+40            0          0          0        2
+41            0          0          0        2
+42            0          0          0        2
+44            0          0          0        2
+45            0          0          0        2
+46            0          0          0        2
+47            0          0          0        2
+48            0          0          0        2
+49            0          0          0        3
+50            0          1          0        2
+51            0          0          0        2
+52            0          0          0        2
+53            0          0          0        3
+54            0          0          0        2
+55            0          0          0        2
+56            0          0          0        2
+57            0          0          0        3
+58            0          0          0        2
+59            0          0          0        2
+60            0          0          0        2
+61            0          0          0        2
+62            0          0          0        2
+63            0          0          0        2
+64            0          0          0        2
+65            0          0          0        2
+66            0          0          0        2
+67            0          0          0        2
+68            0          0          0        2
+69            0          0          0        2
+70            0          0          0        2
+71            0          1          0        2
+72            0          0          0        2
+73            0          0          0        2
+74            0          0          0        3
+75            0          0          0        3
+76            0          1          0        2
+77            0          1          0        2
+78            0          0          0        2
+79            0          1          0        2
+80            0          1          0        2
+81            0          1          0        2
+82            0          0          0        2
+84            0          0          0        2
+85            0          0          0        3
+86            0          0          0        2
+87            0          0          0        2
+88            0          0          0        2
+89            0          0          0        2
+90            0          0          0        2
+91            0          0          0        3
+92            0          0          0        3
+93            0          0          0        3
+94            0          0          0        3
+95            0          0          0        2
+96            0          0          0        2
+97            0          0          0        2
+[1] 97 15
+   LEAD_rsID      ensembl_id hgnc_symbol   gene_biotype nearest second_nearest
+1 rs13267474 ENSG00000159167        STC1 protein_coding       1              0
+2 rs13267474 ENSG00000180053      NKX2-6 protein_coding       0              1
+3 rs13267474 ENSG00000167034      NKX3-1 protein_coding       0              0
+4 rs77924615 ENSG00000169340       PDILT protein_coding       1              0
+5 rs77924615 ENSG00000183549       ACSM5 protein_coding       0              1
+6 rs77924615 ENSG00000169344        UMOD protein_coding       0              0
+  third_nearest LD_overlapping lead_eQTL proxy_eQTL lead_IMPACT proxy_IMPACT
+1             0              0         0          0           0            0
+2             0              0         0          0           0            0
+3             1              0         0          0           0            0
+4             0              1         1          0           0            0
+5             0              0         0          0           0            0
+6             1              0         0          0           0            0
+  coloc_eQTL coloc_pQTL category
+1          0          0        2
+2          0          0        2
+3          0          0        2
+4          0          0        2
+5          0          0        2
+6          1          0        2
+     LEAD_rsID      ensembl_id hgnc_symbol   gene_biotype PoPS  PoPS_score
+4   rs13267474 ENSG00000215298           - protein_coding    1 -0.06153663
+115  rs9329221 ENSG00000258724           - protein_coding    1  0.06787476
+147  rs7826238 ENSG00000182319           - protein_coding    1 -0.03331011
+148  rs7826238 ENSG00000268955           - protein_coding    1 -0.05342040
+[1] 202   9
+   LEAD_rsID      ensembl_id     hgnc_symbol   gene_biotype PoPS  PoPS_score
+1 rs13267474 ENSG00000159167            STC1 protein_coding    1  0.80599472
+2 rs13267474 ENSG00000147454        SLC25A37 protein_coding    1  0.20922057
+3 rs13267474 ENSG00000180053          NKX2-6 protein_coding    1 -0.02517431
+4 rs13267474 ENSG00000215298 ENSG00000215298 protein_coding    1 -0.06153663
+5 rs13267474 ENSG00000167034          NKX3-1 protein_coding    1 -0.09722112
+6 rs13267474 ENSG00000197217          ENTPD4 protein_coding    1 -0.22638398
+  PoPS_top1 PoPS_top2 PoPS_top3
+1         0         0         0
+2         0         0         0
+3         0         0         0
+4         0         0         0
+5         0         0         0
+6         0         0         0
+[1] 8 9
+[1] 3 9
+[1] 13  9
+[1] 3 9
+[1] 7 9
+[1] 3 9
+[1] 25  9
+[1] 3 9
+[1] 3 9
+[1] 3 9
+[1] 3 9
+[1] 3 9
+[1] 4 9
+[1] 3 9
+[1] 3 9
+[1] 3 9
+[1] 6 9
+[1] 3 9
+[1] 15  9
+[1] 3 9
+[1] 14  9
+[1] 3 9
+[1] 3 9
+[1] 3 9
+[1] 4 9
+[1] 3 9
+[1] 5 9
+[1] 3 9
+[1] 7 9
+[1] 3 9
+[1] 2 9
+[1] 2 9
+[1] 4 9
+[1] 3 9
+[1] 1 9
+[1] 1 9
+[1] 12  9
+[1] 3 9
+[1] 1 9
+[1] 1 9
+[1] 3 9
+[1] 3 9
+[1] 5 9
+[1] 3 9
+[1] 5 9
+[1] 3 9
+[1] 5 9
+[1] 3 9
+[1] 22  9
+[1] 3 9
+[1] 4 9
+[1] 3 9
+[1] 11  9
+[1] 3 9
+[1] 7 9
+[1] 3 9
+[1] 79  9
+[1] "LEAD_rsID"    "ensembl_id"   "hgnc_symbol"  "gene_biotype"
+[1] 134  20
+ [1] "LEAD_rsID"      "ensembl_id"     "hgnc_symbol"    "gene_biotype"  
+ [5] "nearest"        "second_nearest" "third_nearest"  "LD_overlapping"
+ [9] "lead_eQTL"      "proxy_eQTL"     "lead_IMPACT"    "proxy_IMPACT"  
+[13] "coloc_eQTL"     "coloc_pQTL"     "category"       "PoPS"          
+[17] "PoPS_score"     "PoPS_top1"      "PoPS_top2"      "PoPS_top3"     
+[1]  5 20
+genes and evidences 
+    symbol       evidences count
+1    THBS1         nearest   1.0
+3   FAM98B  PoPS_top2_0.05   1.0
+4  RASGRP1  PoPS_top1_0.13   1.0
+5 C15orf54 PoPS_top3_-0.05   1.0
+2    FSIP1     2nd_nearest   0.5
+[1]  3 20
+genes and evidences 
+   symbol                    evidences count
+3   DCDC1     nearest, PoPS_top3_-0.22  2.00
+1  MPPED2  2nd_nearest, PoPS_top1_1.01  1.50
+2 ARL14EP 3rd_nearest, PoPS_top2_-0.06  1.25
+[1]  5 20
+genes and evidences 
+  symbol                           evidences count
+2   RERG nearest, LD_overlap, PoPS_top1_0.95  3.00
+4  PTPRO             2nd_nearest, LD_overlap  1.50
+1    MGP                      PoPS_top2_0.46  1.00
+3  ERP27                      PoPS_top3_0.35  1.00
+5   EPS8                         3rd_nearest  0.25
+[1]  6 20
+genes and evidences 
+           symbol               evidences count
+3            IGF2 nearest, PoPS_top1_1.72  2.00
+1           CARS1                cis-eQTL  1.00
+4          MRPL23          PoPS_top3_0.27  1.00
+5         IFITM10          PoPS_top2_0.34  1.00
+6 ENSG00000284779             2nd_nearest  0.50
+2        INS-IGF2             3rd_nearest  0.25
+[1]  6 20
+genes and evidences 
+           symbol       evidences count
+1           RNF32 PoPS_top3_-0.12  1.00
+2           LMBR1  PoPS_top1_0.23  1.00
+3             SHH         nearest  1.00
+5         C7orf13     PoPS_top2_0  1.00
+4           RBM33     2nd_nearest  0.50
+6 ENSG00000283128     3rd_nearest  0.25
+[1]  2 20
+genes and evidences 
+  symbol                    evidences count
+1   NUF2     nearest, PoPS_top1_-0.08   2.0
+2   RGS5 2nd_nearest, PoPS_top2_-0.09   1.5
+[1]  5 20
+genes and evidences 
+  symbol                                       evidences count
+4   DAB2 nearest, LD_overlap, coloc_eQTL, PoPS_top1_0.53  4.00
+2     C9                         2nd_nearest, coloc_eQTL  1.50
+3   OSMR                                  PoPS_top2_0.26  1.00
+5 RICTOR                                  PoPS_top3_0.15  1.00
+1   FYB1                                     3rd_nearest  0.25
+[1]  4 20
+genes and evidences 
+    symbol                    evidences count
+2     STC1      nearest, PoPS_top1_0.81  2.00
+4   NKX2-6 2nd_nearest, PoPS_top3_-0.03  1.50
+1 SLC25A37               PoPS_top2_0.21  1.00
+3   NKX3-1                  3rd_nearest  0.25
+[1]  2 20
+genes and evidences 
+     symbol       evidences count
+1 HNRNPA1L3         nearest     1
+2  C16orf97 PoPS_top1_-0.07     1
+[1]  5 20
+genes and evidences 
+  symbol                evidences count
+4  BICC1 cis-eQTL, PoPS_top1_1.13   2.0
+5   ANK3      nearest, LD_overlap   2.0
+1 UBE2D1           PoPS_top2_0.52   1.0
+2   TFAM           PoPS_top3_0.14   1.0
+3  CCDC6              2nd_nearest   0.5
+[1]  7 20
+genes and evidences 
+   symbol                               evidences count
+2    ETFA 2nd_nearest, LD_overlap, PoPS_top2_0.21  2.50
+6    NRG4   3rd_nearest, cis-eQTL, PoPS_top1_0.23  2.25
+1  UBE2Q2                    cis-eQTL, coloc_eQTL  2.00
+5    ISL2              LD_overlap, PoPS_top3_0.19  2.00
+7 TMEM266                     nearest, LD_overlap  2.00
+3  SCAPER                              LD_overlap  1.00
+4  MAN2C1                                cis-eQTL  1.00
+[1]  3 20
+genes and evidences 
+  symbol                           evidences count
+1   RARB nearest, LD_overlap, PoPS_top1_0.84  3.00
+2  TOP2B        2nd_nearest, PoPS_top3_-0.15  1.50
+3  NGLY1        3rd_nearest, PoPS_top2_-0.15  1.25
+[1]  4 20
+genes and evidences 
+  symbol                   evidences count
+1  LPIN1    nearest, PoPS_top3_-0.03  2.00
+4  GREB1 3rd_nearest, PoPS_top2_0.17  1.25
+3   E2F6              PoPS_top1_0.28  1.00
+2  NTSR2                 2nd_nearest  0.50
+[1] 10 20
+genes and evidences 
+    symbol           evidences count
+4    CCNG2 nearest, LD_overlap  2.00
+1    STBD1            cis-eQTL  1.00
+3   SCARB2      PoPS_top2_0.33  1.00
+5  SHROOM3      PoPS_top1_0.64  1.00
+7  CCDC158            cis-eQTL  1.00
+8   CXCL11            cis-eQTL  1.00
+9   FAM47E            cis-eQTL  1.00
+10   SDAD1      PoPS_top3_0.12  1.00
+6   CXCL13         2nd_nearest  0.50
+2     CCNI         3rd_nearest  0.25
+[1]  4 20
+genes and evidences 
+  symbol           evidences count
+1 COL4A4 nearest, LD_overlap  2.00
+4   IRS1            cis-eQTL  1.00
+3 COL4A3         2nd_nearest  0.50
+2 RHBDD1         3rd_nearest  0.25
+[1]  5 20
+genes and evidences 
+   symbol                           evidences count
+2   RREB1 nearest, LD_overlap, PoPS_top1_0.75  3.00
+1     DSP                     PoPS_top3_-0.01  1.00
+5 SNRNP48                       PoPS_top2_0.1  1.00
+3    SSR1                         2nd_nearest  0.50
+4   CAGE1                         3rd_nearest  0.25
+[1]  4 20
+genes and evidences 
+   symbol                                                 evidences count
+1  SH3YL1 nearest, LD_overlap, cis-eQTL, coloc_eQTL, PoPS_top1_0.27  5.00
+2    ACP1         2nd_nearest, cis-eQTL, coloc_eQTL, PoPS_top3_0.16  3.50
+4  ALKAL2                         3rd_nearest, cis-eQTL, coloc_eQTL  2.25
+3 FAM110C                                             PoPS_top2_0.2  1.00
+[1]  5 20
+genes and evidences 
+   symbol                                                 evidences count
+1  PTPN12 nearest, LD_overlap, cis-eQTL, coloc_eQTL, PoPS_top2_0.36  5.00
+3  TMEM60                                  cis-eQTL, PoPS_top1_0.49  2.00
+5  RSBN1L                                  cis-eQTL, PoPS_top3_0.11  2.00
+4    GSAP                                               2nd_nearest  0.50
+2 CCDC146                                               3rd_nearest  0.25
+[1]  3 20
+genes and evidences 
+     symbol                   evidences count
+1    NFE2L3     nearest, PoPS_top2_0.09  2.00
+3 HNRNPA2B1 2nd_nearest, PoPS_top3_-0.2  1.50
+2      CBX3 3rd_nearest, PoPS_top1_0.11  1.25
+[1]  4 20
+genes and evidences 
+    symbol                         evidences count
+3    VEGFA nearest, cis-eQTL, PoPS_top1_0.84  3.00
+1  MRPS18A       2nd_nearest, PoPS_top3_0.28  1.50
+2 HSP90AB1                     PoPS_top2_0.3  1.00
+4    RSPH9                       3rd_nearest  0.25
+[1]  1 20
+genes and evidences 
+  symbol               evidences count
+1  PKHD1 nearest, PoPS_top1_0.49     2
+[1]  4 20
+genes and evidences 
+        symbol                   evidences count
+2       NT5C1B    nearest, PoPS_top3_-0.11  2.00
+3        RDH14 3rd_nearest, PoPS_top1_0.13  1.25
+1        KCNS3             PoPS_top2_-0.07  1.00
+4 NT5C1B-RDH14                 2nd_nearest  0.50
+[1]  5 20
+genes and evidences 
+   symbol                               evidences count
+1   PDILT           nearest, LD_overlap, cis-eQTL  3.00
+2    UMOD 3rd_nearest, coloc_eQTL, PoPS_top1_0.66  2.25
+3     GP2                          PoPS_top2_0.39  1.00
+5 DCUN1D3                          PoPS_top3_0.14  1.00
+4   ACSM5                             2nd_nearest  0.50
+[1]  5 20
+genes and evidences 
+     symbol                              evidences count
+5     PRAG1        nearest, LD_overlap, coloc_eQTL  3.00
+3    CLDN23 2nd_nearest, cis-eQTL, PoPS_top3_-0.03  2.50
+1      ERI1              cis-eQTL, PoPS_top2_-0.01  2.00
+2    MFHAS1               cis-eQTL, PoPS_top1_0.33  2.00
+4 FAM90A12P                            3rd_nearest  0.25
+[1]  6 20
+genes and evidences 
+   symbol           evidences count
+5   RBM44 nearest, LD_overlap  2.00
+2   IQCA1      PoPS_top3_-0.1  1.00
+4  COL6A3      PoPS_top1_0.23  1.00
+6   COPS8     PoPS_top2_-0.08  1.00
+1 LRRFIP1         2nd_nearest  0.50
+3   RAMP1         3rd_nearest  0.25
+[1]  3 20
+genes and evidences 
+  symbol                                     evidences count
+1   DDX1 nearest, cis-eQTL, coloc_eQTL, PoPS_top2_0.09  4.00
+2   MYCN                  2nd_nearest, PoPS_top3_-0.27  1.50
+3   NBAS                   3rd_nearest, PoPS_top1_0.13  1.25
+[1]  6 20
+genes and evidences 
+   symbol      evidences count
+3  HOXD10 PoPS_top3_0.48  1.00
+4  HOXD11 PoPS_top1_0.93  1.00
+5 HNRNPA3        nearest  1.00
+6   HOXD4 PoPS_top2_0.51  1.00
+2  NFE2L2    2nd_nearest  0.50
+1    AGPS    3rd_nearest  0.25
+[1]  6 20
+genes and evidences 
+           symbol                                                 evidences
+3            MSRA nearest, LD_overlap, cis-eQTL, coloc_eQTL, PoPS_top1_0.28
+5          PRSS51                                     2nd_nearest, cis-eQTL
+1           MTMR9                                                  cis-eQTL
+2            SOX7                                            PoPS_top3_0.06
+6 ENSG00000258724                                            PoPS_top2_0.07
+4          PRSS55                                               3rd_nearest
+  count
+3  5.00
+5  1.50
+1  1.00
+2  1.00
+6  1.00
+4  0.25
+[1]  6 20
+genes and evidences 
+  symbol                evidences count
+2   TBX2 cis-eQTL, PoPS_top2_0.64  2.00
+3   TBX4           PoPS_top1_0.66  1.00
+5  BCAS3           PoPS_top3_0.34  1.00
+6  YPEL2                  nearest  1.00
+1  DHX40              2nd_nearest  0.50
+4   CLTC              3rd_nearest  0.25
+summary file done 
+sentinel file 
+[1] 30  4
+        rsID CHR    START      END
+1 rs13267474   8 23784587 23784587
+2 rs77924615  16 20392332 20392332
+3  rs9895661  17 59456589 59456589
+4   rs744103   6 43805362 43805362
+5   rs807624   2 15782471 15782471
+6 rs77683480   2 18680741 18680741
+merging ProGeM summary file with sentinel file 
+[1] 29  6
+[1] "rsID"                "CHR"                 "START"              
+[4] "END"                 "gene_evidences_all"  "gene_evidences_top1"
+ProGeM_sentinel file done 
+## postprocessing finished ## 

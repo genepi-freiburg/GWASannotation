@@ -5,45 +5,51 @@ option_list = list(
   make_option("--proxy_filepath", action="store", default=NA, type='character', help="proxy_filepath [required]"),
   make_option("--VEP_filepath", action="store", default=NA, type='character', help="VEP_filepath [required]"),
   make_option("--PoPS_filepath", action="store", default=NA, type='character', help="PoPS_filepath [required]"),
-  make_option("--output_folder", action="store", default=NA, type='character', help="output_folder [required]")
+  make_option("--coloc_dir", action="store", default=NA, type='character', help="Colocalization results directory path [required]"),
+  make_option("--output_path", action="store", default=NA, type='character', help="output_path [required]")
 
 )
 
 opt = parse_args(OptionParser(option_list=option_list))
 
-filename_metabolic_genes=opt$PoPS_filepath
 ######################################## USER-DEFINED SETTINGS ########################################
 ## 1. DIRECTORIES AND FILES
 
 # Working directory:
-base_dir <- "/data/meta_analyses/13_UMOD/04_meta/01_UMOD_overall/transethic/meta_plus_UKB50k/PRoGem_run/"
+#base_dir <- "/data/meta_analyses/13_UMOD/04_meta/01_UMOD_overall/transethic/meta_plus_UKB50k/PRoGem_run/"
 
 # Output directory: 
-output_dir <- opt$output_folder
+
+folder_path <- dirname(opt$output_path)
+output_dir <- paste0(folder_path, "/ProGeM/")
+dir.create(output_dir)
 
 # Directory for GTEx eQTL data set:
-eQTLdata_dir <- "/data/public_resources/GTeX/eQTLs/V7/GTEx_Analysis_v7_eQTL"
+eQTLdata_dir <- "/data/public_resources/GTeX/eQTLs/V8/GTEx_Analysis_v8_eQTL"
 
-# File containing a curated list of known metabolic phenotype-related genes:
+# File containing a PoPS results:
 #full path
-#filename_metabolic_genes <- "/data/studies/06_UKBB/02_Projects/14_MRI-kidney/07_ProGeM/02_Pops/02_output/model1_qnorm_tkv.bsa/model1_qnorm_medulla.bsa.RData"
-filename_metabolic_genes=opt$PoPS_filepath
+filename_PoPS=opt$PoPS_filepath
+
+#Coloc
+coloc_dir=opt$coloc_dir
+COLOC_EQTL_filename=paste0(coloc_dir,"input_Progem_eQTL.txt")
+COLOC_PQTL_filename=paste0(coloc_dir,"input_Progem_pQTL.txt")
 
 # File containing reference genes:
-gene_model_filename <- "PRoGeM/GRCh37_genes.RData"							# default provided.
+gene_model_filename <- "/data/programs/bin/gwas/PRoGeM/GRCh38_genes.RData"							# default provided.
 
 # Files containing GWAS sentinel and proxy variants:
 # sentinel_filename #full path
-#sentinel_filename <- "/data/studies/06_UKBB/02_Projects/14_MRI-kidney/07_ProGeM/01_VEP/02_output/model1_qnorm_medulla.bsa/model1_qnorm_medulla.bsa_sentinel.txt"#
 sentinel_filename <- opt$sentinel_filepath
 
 # proxy_filename #full path
-#proxy_filename <- "/data/studies/06_UKBB/02_Projects/14_MRI-kidney/07_ProGeM/01_VEP/02_output/model1_qnorm_medulla.bsa/model1_qnorm_medulla.bsa_proxies.txt"
 proxy_filename <- opt$proxy_filepath
+
 # File containing VEP annotation:
 # VEP_filename #full path
-#VEP_filename <-"/data/studies/06_UKBB/02_Projects/14_MRI-kidney/07_ProGeM/01_VEP/02_output/model1_qnorm_tkv.bsa/model1_qnorm_tkv.bsa_proxies_vepout.txt"
 VEP_filename <- opt$VEP_filepath
+
 #------------------------------------------------------------------------------------------------------
 ## 2. PARAMETERS FOR TOP-DOWN APPROACH
 
@@ -80,70 +86,54 @@ IMPACT_column <- 14
 r2_column <- NULL    # OPTIONAL: only required if your VEP output needs to be filtered based on r2_thresh
 
 # Tissue(s) of interest for GTEx eQTL data set:
-GTEx_tissues <- dir(eQTLdata_dir)[grep("signifpairs", dir(eQTLdata_dir))]     # variable contains filenames
-GTEx_tissues <- dir(eQTLdata_dir)[grep("signif_variant_gene_pairs",
-    dir(eQTLdata_dir))]
-                # for all GTEx v7 tissues (n=44) 
-                # as per below.
-
-# [1] "Adipose_Subcutaneous.signifpairs.txt"
-# [2] "Adipose_Visceral_Omentum.signifpairs.txt"
-# [3] "Adrenal_Gland.signifpairs.txt"
-# [4] "Artery_Aorta.signifpairs.txt"
-# [5] "Artery_Coronary.signifpairs.txt"
-# [6] "Artery_Tibial.signifpairs.txt"
-# [7] "Brain_Amygdala.signifpairs.txt"
-# [8] "Brain_Anterior_cingulate_cortex_BA24.signifpairs.txt"
-# [9] "Brain_Caudate_basal_ganglia.signifpairs.txt" 
-# [10] "Brain_Cerebellar_Hemisphere.signifpairs.txt"
-# [11] "Brain_Cerebellum.signifpairs.txt"
-# [12] "Brain_Cortex.signifpairs.txt"
-# [13] "Brain_Frontal_Cortex_BA9.signifpairs.txt"
-# [14] "Brain_Hippocampus.signifpairs.txt"
-# [15] "Brain_Hypothalamus.signifpairs.txt"
-# [16] "Brain_Nucleus_accumbens_basal_ganglia.signifpairs.txt"
-# [17] "Brain_Putamen_basal_ganglia.signifpairs.txt"          
-# [18] "Brain_Spinal_cord_cervical_c-1.signifpairs.txt"       
-# [19] "Brain_Substantia_nigra.signifpairs.txt"               
-# [20] "Breast_Mammary_Tissue.signifpairs.txt"                
-# [21] "Cells_EBV-transformed_lymphocytes.signifpairs.txt"    
-# [22] "Cells_Transformed_fibroblasts.signifpairs.txt"        
-# [23] "Colon_Sigmoid.signifpairs.txt"                        
-# [24] "Colon_Transverse.signifpairs.txt"                     
-# [25] "Esophagus_Gastroesophageal_Junction.signifpairs.txt"  
-# [26] "Esophagus_Mucosa.signifpairs.txt"                     
-# [27] "Esophagus_Muscularis.signifpairs.txt"                 
-# [28] "Heart_Atrial_Appendage.signifpairs.txt"               
-# [29] "Heart_Left_Ventricle.signifpairs.txt"                 
-# [30] "Liver.signifpairs.txt"                                
-# [31] "Lung.signifpairs.txt"                                 
-# [32] "Minor_Salivary_Gland.signifpairs.txt"                 
-# [33] "Muscle_Skeletal.signifpairs.txt"                      
-# [34] "Nerve_Tibial.signifpairs.txt"                         
-# [35] "Ovary.signifpairs.txt"                                
-# [36] "Pancreas.signifpairs.txt"                             
-# [37] "Pituitary.signifpairs.txt"
-# [38] "Prostate.signifpairs.txt"
-# [39] "Skin_Not_Sun_Exposed_Suprapubic.signifpairs.txt"      
-# [40] "Skin_Sun_Exposed_Lower_leg.signifpairs.txt"           
-# [41] "Small_Intestine_Terminal_Ileum.signifpairs.txt"       
-# [42] "Spleen.signifpairs.txt"                               
-# [43] "Stomach.signifpairs.txt"                              
-# [44] "Testis.signifpairs.txt"                               
-# [45] "Thyroid.signifpairs.txt"                              
-# [46] "Uterus.signifpairs.txt"                               
-# [47] "Vagina.signifpairs.txt"                               
-# [48] "Whole_Blood.signifpairs.txt" 
+#GTEx_tissues <- dir(eQTLdata_dir)[grep("signifpairs", dir(eQTLdata_dir))]     # variable contains filenames
+GTEx_tissues <- dir(eQTLdata_dir)[grep("signif_variant_gene_pairs", dir(eQTLdata_dir))]
 
 tissues_of_interest <- GTEx_tissues[]     # default is all tissues.
 # tissues_of_interest <- GTEx_tissues[48]
                                           # alternatively the user can select specific tissues by
                                           # providing the appropriate indices in the square brackets.
 
+# Column indices and threshold in the COLOC eQTL file
+coloc_eqtl_sentinel_rsID_col <- 1
+# Index of Ensembl gene ID column
+coloc_eqtl_ensembl_gene_id_col <- 7
+# Index of the tissue column
+eqtl_tissue_col <- 6
+
+# Only these tissues will be considered
+# Reformat the tissues_of_interest from GTEx eQTL lookup above and include
+tissues_of_interest.short <-sub(pattern=".v8.signif_variant_gene_pairs.txt.gz",
+                                replacement="", x=GTEx_tissues, fixed=TRUE)
+eqtl_tissues_of_interest <- c(tissues_of_interest.short,
+                              "Kidney_eQTL.GlomsigeQTLs", "Kidney_eQTL_Meta_S686_Significant.q0.01",
+                              "Kidney_eQTL.TubsigeQTLs")
+
+eqtl_sumstats_2_max_nlog10P_col <- 4
+# If set, sumstats_2_max_nlog10P will be filtered for > this threshold
+eqtl_sumstats_2_max_nlog10P_thresh <- -log10(5e-8)
+eqtl_PP.H4.abf_col <- 5
+# If set, PP.H4.abf will be filtered for > this threshold
+eqtl_PP.H4.abf_thresh <- 0.8
+# Index of the gene type column
+coloc_eqtl_gene_type_col <- 8
+eqtl_cis_trans_col <- 10
+eqtl_cis_trans_sel <- c("cis")
+
+# Column indices and threshold in the COLOC pQTL file
+coloc_pqtl_sentinel_rsID_col <- 1
+coloc_pqtl_ensembl_gene_id_col <- 6
+pqtl_sumstats_2_max_nlog10P_col <- 4
+pqtl_sumstats_2_max_nlog10P_thresh <- -log10(5e-8)
+pqtl_PP.H4.abf_col <- 5
+pqtl_PP.H4.abf_thresh <- 0.8
+pqtl_cis_trans_col <- 7
+pqtl_cis_trans_sel <- c("cis")
+
 #------------------------------------------------------------------------------------------------------
 ## 4. EXECUTE ANNOTATION
 
-source(file = file.path("/data/studies/06_UKBB/02_Projects/14_MRI-kidney/07_ProGeM/00_scripts/ProGeM_functions.R"))			# provided.
-source(file = file.path("/data/studies/06_UKBB/02_Projects/14_MRI-kidney/07_ProGeM/00_scripts/ProGeM_commands.R"))	    # provided.
+source(file = file.path("/data/programs/pipelines/GWASannotation/00_scripts/ProGeM_functions.R"))			# provided.
+source(file = file.path("/data/programs/pipelines/GWASannotation/00_scripts/ProGeM_commands.R"))	    # provided.
 
 #######################################################################################################

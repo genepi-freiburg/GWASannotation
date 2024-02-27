@@ -2,7 +2,7 @@
 
 # Define input and output directories
 input_file="$1" #input file for VEP
-output=${input/_vep/_vepout}
+output=${input_file/_vep/_vepout}
 
 # Generate MAGMA scores
 echo "Run VEP"
@@ -17,7 +17,8 @@ echo "Run VEP"
 --af_gnomad \
 --regulatory \
 --offline \
---assembly GRCh37 \
+--assembly GRCh38 \
+--verbose \
 --fork 8
 
 # Check exit status

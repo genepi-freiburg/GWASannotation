@@ -35,7 +35,7 @@ find_overlapping_genes <- function(ranges, gene_model, overhang) {
 
 
 gene_annotator <- function(ids) {
-  ensembl = useMart(biomart="ENSEMBL_MART_ENSEMBL", host="grch37.ensembl.org", path="/biomart/martservice", 
+  ensembl = useMart(biomart="ENSEMBL_MART_ENSEMBL", path="/biomart/martservice", 
                     dataset="hsapiens_gene_ensembl")
   gene_info <- data.table(getBM(attributes = c("ensembl_gene_id", "hgnc_symbol", "gene_biotype", 
                                                "chromosome_name"), filters = "ensembl_gene_id", 
@@ -106,12 +106,11 @@ cis_eQTL_target_finder <- function(dir, tissues, sentinels, proxies) {
     current_tissue <- unlist(strsplit(i[1], ".signif_variant_gene_pairs.txt.gz"))
     temp_tissue_data <- data.table(read.table(file = file.path(dir, i), header = TRUE, quote = NULL,
                                               sep = "\t", stringsAsFactors = FALSE))
-    temp_search_terms <- gsub("^([^_]*_[^_]*_).*$", "\\1", temp_tissue_data$variant_id)
-    
+    #temp_search_terms <- gsub("^([^_]*_[^_]*_).*$", "\\1", temp_tissue_data$variant_id)
+    temp_search_terms <- gsub("^chr([^_]*_)([^_]*_).*$", "\\1\\2", temp_tissue_data$variant_id)
     sentinel_indices <- which(temp_search_terms %in% sentinels$GTEx_search_term)
     tissue <- rep(current_tissue, length(sentinel_indices))
     search_term <- temp_search_terms[sentinel_indices]
-    
     sentinel_eQTL_hits <- rbind(sentinel_eQTL_hits, 
                                 cbind(search_term, 
                                       temp_tissue_data[sentinel_indices, c(1:4, 9)], 
@@ -195,18 +194,18 @@ cis_eQTL_gene_extractor <- function(sentinels, proxies, cis_eQTLs) {
 }
 
 
-top_down_candidate_identifier <- function(SNP_ranges, metabolic_gene_ranges, overhang) {
-  metabolic_overlapping_genes <- vector(mode = "list", length = length(metabolic_gene_ranges))
-  names(metabolic_overlapping_genes) <- names(metabolic_gene_ranges)
-  for(i in 1:length(metabolic_gene_ranges)) {
-    hits <- findOverlaps(SNP_ranges, metabolic_gene_ranges[[i]], maxgap = overhang * 1000)
-    overlapping_genes <- metabolic_gene_ranges[[i]][subjectHits(hits)]
+top_down_candidate_identifier <- function(SNP_ranges, PoPS_gene_ranges, overhang) {
+  PoPS_overlapping_genes <- vector(mode = "list", length = length(PoPS_gene_ranges))
+  names(PoPS_overlapping_genes) <- names(PoPS_gene_ranges)
+  for(i in 1:length(PoPS_gene_ranges)) {
+    hits <- findOverlaps(SNP_ranges, PoPS_gene_ranges[[i]], maxgap = overhang * 1000)
+    overlapping_genes <- PoPS_gene_ranges[[i]][subjectHits(hits)]
     sentinels <- names(sentinel_ranges[queryHits(hits)])
     mcols(overlapping_genes)[length(mcols(overlapping_genes)) + 1] <- sentinels
     names(mcols(overlapping_genes))[length(mcols(overlapping_genes))] <- "lead_variant"
-    metabolic_overlapping_genes[[i]] <- overlapping_genes
+    PoPS_overlapping_genes[[i]] <- overlapping_genes
   }
-  return(metabolic_overlapping_genes)
+  return(PoPS_overlapping_genes)
 }
 
 
@@ -219,7 +218,8 @@ top_down_scorer <- function(sentinels, metabolic_overlapping_genes) {
     genes <- NULL
     for(x in 1:length(temp)) {
       temp[[x]] <- as.data.frame(mcols(metabolic_overlapping_genes[[x]][which(mcols(metabolic_overlapping_genes[[x]])$lead_variant == lead)]))
-      genes <- unique(rbind(genes, temp[[x]][,c(1:5)]))
+      # genes <- unique(rbind(genes, temp[[x]][,c(1:5)]))
+      genes <- unique(rbind(genes, temp[[x]][,c(1:6)]))
       # genes <- unique(rbind(genes, temp[[x]][,c(1:1)]))
     }
     if(length(genes[,1]) > 0) {
@@ -228,7 +228,7 @@ top_down_scorer <- function(sentinels, metabolic_overlapping_genes) {
       #      "orphanet", "reactome",
       #      "score")))
       top_down_tally <- matrix(data = 0,
-                               nrow = length(genes[,1]), ncol = 2, dimnames = list(NULL, c("PoPS", "score")))
+                               nrow = length(genes[,1]), ncol = 2, dimnames = list(NULL, c("PoPS", "PoPS_score")))
 
       for(y in 1:length(genes[,1])) {
         for(z in 1:length(temp)) {
@@ -236,7 +236,8 @@ top_down_scorer <- function(sentinels, metabolic_overlapping_genes) {
             top_down_tally[y, z] <- 1
           }
         }
-        top_down_tally[y, 2] <- sum(top_down_tally[y,])
+        # top_down_tally[y, 2] <- sum(top_down_tally[y,])
+        top_down_tally[y, 2] <- genes[y, 6]
       }
       LEAD_rsID <- rep(lead, length(genes[,1]))
       top_down_scores <- rbind(top_down_scores, cbind(LEAD_rsID, genes[,c(3:5)], top_down_tally))
@@ -253,7 +254,6 @@ top_down_scorer <- function(sentinels, metabolic_overlapping_genes) {
   
   return(data.table(top_down_scores))
 }
-
 
 bottom_up_summariser <- function(sentinels, nearest, LD_overlapping, LD_annotation, cis_eQTLs, 
                                  cis_eQTL_annotation) {
@@ -366,6 +366,22 @@ VEP_integrator <- function(sentinels, bottom_up, VEP, sentinel_col, proxy_col, e
       }
     }
   return(data.table(VEP_matrix))
+}
+
+COLOC_integrator <- function(sentinels, bottom_up, COLOC, sentinel_col, ensembl_col, QTL_type = "eQTL") {
+  col.n <- paste0("coloc_", QTL_type)
+  COLOC_matrix <- matrix(data = 0, nrow = length(bottom_up$LEAD_rsID), ncol = 1,
+                         dimnames = list(NULL, c(col.n)))
+  for (i in 1:length(sentinels$rsID)) {
+    lead <- sentinels$rsID[i]
+    if (lead %in% COLOC[[sentinel_col]]) {
+      temp <- COLOC[which(COLOC[[sentinel_col]] == lead), ]
+      for(x in unique(temp[[ensembl_col]])) {
+        COLOC_matrix[which(bottom_up$LEAD_rsID == lead & bottom_up$ensembl_id == x), 1] <- 1
+      }
+    }
+  }
+  return(data.table(COLOC_matrix))
 }
 
 

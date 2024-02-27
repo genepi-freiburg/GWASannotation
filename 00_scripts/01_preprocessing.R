@@ -6,18 +6,20 @@
 #  - sentinel file: txt file with the index SNP (top SNP) for each loci
 #  - proxy file: txt file with the snps for each loci (+/- 500kb around the index snp) ***NOTE: add parameter to decide the window
 #  - magma input
-# **** also preprocess file for coloc!
+#  - filtered regions file for coloc!
 # **** take genome version into consideration????
 ##################################################################
-
 
 suppressMessages(library(readxl))
 suppressMessages(library(dplyr))
 suppressMessages(library(optparse))
 suppressMessages(library(data.table))
+devtools::load_all("/data/programs/pipelines/genepicoloc/genepicoloc_package")
+sapply(list.files("/data/programs/pipelines/genepicoloc/custom_scripts/source", full.names = T), source)
+
 
 option_list = list(
-  make_option("--GWAS", action="store", default=NA, type='character', help="GWAS summary stats - regenie output (gz and tabix) [required]"),
+  make_option("--GWAS_RDS", action="store", default=NA, type='character', help="GWAS summary stats .RSD [required]"),
   make_option("--output_path", action="store", default=NA, type='character', help="output folder path [required]")
 )
 
@@ -25,33 +27,32 @@ opt = parse_args(OptionParser(option_list=option_list))
 
 #####################################
 # load input file
-input=fread(opt$GWAS)
-#input=fread("/data/studies/06_UKBB/02_Projects/14_MRI-kidney/02_output/regenie_output/step2/20Oct/maf001/model2_qnorm_tkv.bsa_cov_eGFR_chr1-22_maf001.regenie.gz")
-
-
-
-#create a p-value collumn P
-input$P=10^(-input$LOG10P)
-
+sumstats <- readRDS(opt$GWAS_RDS)
 
 print("head gwas")
-head(input)
-
-
+head(sumstats)
 
 #####################################
 # loci regions - using function from coloc
 cat("\n## Defining significant loci (regions around 500kb of the index SNP) ##  \n")
-source("/data/programs/pipelines/genepicoloc/genepicoloc_package/R/02_process_sumstats.R") #*** when adding coloc preprocessing, just load all...
 
-regions_list <- get_coloc_regions(sumstats = input, CHR_name = "CHROM", POS_name = "GENPOS", nlog10p_value_name = "LOG10P", nlogP_threshold = -log10(5e-8), halfwindow = 500000)
+regions_list <- get_coloc_regions(sumstats, nlogP_threshold = -log10(5e-8), halfwindow = 500000)
 
-regions <- regions_list$coloc_regions_PASS
+regions <- regions_list$coloc_regions
+regions <- regions[which(regions$comment=="PASS"),]
 cat(paste0(nrow(regions)), " loci identified \n")
 
-
+regions_log <- regions_list$regions_log
+sumstats_filt <- regions_list$sumstats_filt
+head(sumstats_filt)
+#sumstats_filt <- subset_sumstats(sumstats, regions)
 # Save
-saveRDS(regions_list, paste0(opt$output,"/loci_regions.RDS"))
+writeLines(regions_log, con = paste0(opt$output_path, "_get_coloc_regions_log.txt"))
+saveRDS(sumstats_filt, paste0(opt$output_path, "_subset.RDS")) #not needed?
+write.table(sumstats_filt, file = paste0(opt$output_path, "_subset.txt"), sep = "\t", row.names = FALSE, quote = FALSE)
+system(paste0("bgzip ", opt$output_path, "_subset.txt"))
+system(paste0("tabix -b 4 -e 4 -S 1 -s 3 ", opt$output_path, "_subset.txt.gz"))
+saveRDS(regions_list, paste0(opt$output_path, "_coloc_regions.RDS"))
 
 #####################################
 # sentinel file
@@ -60,15 +61,14 @@ cat("\n## Creating sentinel file ## \n")
 tophit=regions
 
 tophit$strand <- "+"
-#tophit$rsID <- paste(tophit$CHROM, tophit$GENPOS, sep = ":")
+#tophit$rsID <- paste(tophit$CHROM, tophit$POS, sep = ":")
 
-tophit$allele <- paste(tophit$ALLELE0, tophit$ALLELE1,
-    sep = "/")
+tophit$allele <- paste(tophit$A1, tophit$A2, sep = "/")
 
 tophit<- tophit %>%
-    mutate(ID = ifelse(startsWith(ID, "rs"), ID, paste0(CHROM, ":", GENPOS)))
+    mutate(ID = ifelse(startsWith(rsID, "rs"), rsID, paste0(CHR_var, ":", POS)))
 
-tophit <- tophit[c("ID","CHROM", "GENPOS", "GENPOS")]
+tophit <- tophit[c("rsID","CHR_var", "POS", "POS")]
 colnames(tophit) <- c("rsID", "CHR", "START", "END")
 
 write.table(x=tophit, file = paste0(opt$output_path, "_sentinel.txt"),
@@ -102,7 +102,7 @@ rm(tophit)
 tophit=regions
 #In cases where there is no rsID for a sentinel variant then the notation "chr:start" should be used (i.e., 1:11856378).
 tophit <- tophit %>%
-    mutate(ID = ifelse(startsWith(ID, "rs"), ID, paste0(CHROM, ":", GENPOS)))
+    mutate(ID = ifelse(startsWith(rsID, "rs"), rsID, paste0(CHR_var, ":", POS)))
 
 
 
@@ -123,22 +123,22 @@ res <- data.frame(
   CM = numeric(),
   stringsAsFactors = FALSE)
 for (i in 1:nrow(tophit)) {
-    chr <- tophit[i, "CHROM"]
-    pos <- tophit[i, "GENPOS"]
-    cat(paste0("leadSNP: ", tophit[i, "ID"], "\n"))
+    chr <- tophit[i, "CHR_var"]
+    pos <- tophit[i, "POS"]
+    cat(paste0("leadSNP: ", tophit[i, "rsID"], "\n"))
     ld.df <- ld.basic(snp_chr=chr, snp_pos1=pos, snp_pos2=pos)
     #print(colnames(ld.df))
     if (is.null(ld.df)) {
         print("ld.df is null")
-        ld.df <- c(paste0("chr",chr), pos, pos, 1, NA, NA, tophit[i, "ID"], NA,
-             tophit[i, "ALLELE0"],  tophit[i, "A1FREQ"],tophit[i, "ALLELE1"],NA,NA,tophit[i, "ID"])
+        ld.df <- c(paste0("chr",chr), pos, pos, 1, NA, NA, tophit[i, "rsID"], NA,
+             tophit[i, "A1"],  tophit[i, "AF"],tophit[i, "A2"],NA,NA,tophit[i, "rsID"])
           
         res[nrow(res) + 1,] <- ld.df
         next
     }
     print("nrow ld.df")
     print(nrow(ld.df))
-    ld.df$LEAD_rsID <- tophit[i, "ID"]
+    ld.df$LEAD_rsID <- tophit[i, "rsID"]
     res <- rbind(res, ld.df)
 }
 
@@ -186,14 +186,20 @@ write.table(x=res[c("PROXY_CHR", "PROXY_START", "PROXY_END", "allele",
 #SNP P N
 #rs367896724 0.810602 37941
 cat("\n## Prepare magma input file ## \n")
-input_magma=input
+input_magma=sumstats
 
-input_magma$P=10^(-input_magma$LOG10P)
+input_magma$P=10^(-input_magma$nlog10P)
 
-input_magma=input_magma[,c("ID", "P", "N")]
-colnames(input_magma)=c("SNP", "P", "N")
-print(head("input magma"))
-head(input_magma)
-write.table(input_magma,paste0(opt$output_path,"_input_magma.txt"), row.names=F, col.names=T, sep="\t", quote=F)
+input_magma_rsID=input_magma[,c("rsID", "P", "N")]
+colnames(input_magma_rsID)=c("SNP", "P", "N")
+print(head("input magma rsID"))
+head(input_magma_rsID)
+write.table(input_magma_rsID,paste0(opt$output_path,"_input_magma_rsid.txt"), row.names=F, col.names=T, sep="\t", quote=F)
+
+input_magma_CHRPOS=input_magma[,c("Name", "P", "N")]
+colnames(input_magma_CHRPOS)=c("SNP", "P", "N")
+print(head("input magma CHRPOS"))
+head(input_magma_CHRPOS)
+write.table(input_magma_CHRPOS,paste0(opt$output_path,"_input_magma_CHRPOS.txt"), row.names=F, col.names=T, sep="\t", quote=F)
 
 cat("\n## Pre-processing finished ##\n")
