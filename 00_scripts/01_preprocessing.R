@@ -1,6 +1,6 @@
 ###############################################################
 # process the input (regneie.gz for now) and creates input files for VEP, ProGEM script and for MAGMA
-# input: GWAS.regenie.gz
+# input: .RDS
 # outputs:
 #  - loci regions (function bored from coloc pipeline) - intermediate file or will we use it in the end?
 #  - sentinel file: txt file with the index SNP (top SNP) for each loci
@@ -10,24 +10,9 @@
 # **** take genome version into consideration????
 ##################################################################
 
-suppressMessages(library(readxl))
-suppressMessages(library(dplyr))
-suppressMessages(library(optparse))
-suppressMessages(library(data.table))
-devtools::load_all("/data/programs/pipelines/genepicoloc/genepicoloc_package")
-sapply(list.files("/data/programs/pipelines/genepicoloc/custom_scripts/source", full.names = T), source)
-
-
-option_list = list(
-  make_option("--GWAS_RDS", action="store", default=NA, type='character', help="GWAS summary stats .RSD [required]"),
-  make_option("--output_path", action="store", default=NA, type='character', help="output folder path [required]")
-)
-
-opt = parse_args(OptionParser(option_list=option_list))
-
 #####################################
 # load input file
-sumstats <- readRDS(opt$GWAS_RDS)
+sumstats <- readRDS(GWAS_RDS)
 
 print("head gwas")
 head(sumstats)
@@ -47,12 +32,12 @@ sumstats_filt <- regions_list$sumstats_filt
 head(sumstats_filt)
 #sumstats_filt <- subset_sumstats(sumstats, regions)
 # Save
-writeLines(regions_log, con = paste0(opt$output_path, "_get_coloc_regions_log.txt"))
-saveRDS(sumstats_filt, paste0(opt$output_path, "_subset.RDS")) #not needed?
-write.table(sumstats_filt, file = paste0(opt$output_path, "_subset.txt"), sep = "\t", row.names = FALSE, quote = FALSE)
-system(paste0("bgzip ", opt$output_path, "_subset.txt"))
-system(paste0("tabix -b 4 -e 4 -S 1 -s 3 ", opt$output_path, "_subset.txt.gz"))
-saveRDS(regions_list, paste0(opt$output_path, "_coloc_regions.RDS"))
+writeLines(regions_log, con = paste0(output_path, "_get_coloc_regions_log.txt"))
+saveRDS(sumstats_filt, paste0(output_path, "_subset.RDS")) #not needed?
+write.table(sumstats_filt, file = paste0(output_path, "_subset.txt"), sep = "\t", row.names = FALSE, quote = FALSE)
+system(paste0("bgzip ", output_path, "_subset.txt"))
+system(paste0("tabix -b 4 -e 4 -S 1 -s 3 ", output_path, "_subset.txt.gz"))
+saveRDS(regions_list, paste0(output_path, "_coloc_regions.RDS"))
 
 #####################################
 # sentinel file
@@ -71,7 +56,7 @@ tophit<- tophit %>%
 tophit <- tophit[c("rsID","CHR_var", "POS", "POS")]
 colnames(tophit) <- c("rsID", "CHR", "START", "END")
 
-write.table(x=tophit, file = paste0(opt$output_path, "_sentinel.txt"),
+write.table(x=tophit, file = paste0(output_path, "_sentinel.txt"),
     quote = FALSE, sep = "\t", row.names = FALSE, col.names = TRUE)
 
 #####################################
@@ -162,7 +147,7 @@ res$PROXY_END <- as.numeric(res$PROXY_START) + nchar(as.character(res$MINOR)) - 
 cat("head proxie file \n")
 head(res[c("PROXY_rsID", "PROXY_CHR", "PROXY_START", "PROXY_END","LEAD_rsID", "r2")])
 write.table(x=res[c("PROXY_rsID", "PROXY_CHR", "PROXY_START", "PROXY_END",
-    "LEAD_rsID", "r2")], file= paste0(opt$output_path, "_proxies.txt"), quote = FALSE, sep = "\t",
+    "LEAD_rsID", "r2")], file= paste0(output_path, "_proxies.txt"), quote = FALSE, sep = "\t",
     row.names = FALSE, col.names = TRUE)
 
 
@@ -176,7 +161,7 @@ head(res[c("PROXY_CHR", "PROXY_START", "PROXY_END", "allele",
 #dim(res[!duplicated(res),])
 
 write.table(x=res[c("PROXY_CHR", "PROXY_START", "PROXY_END", "allele",
-    "strand", "PROXY_rsID")], file = paste0(opt$output_path, "_proxies_vep.txt"), quote = FALSE, sep = "\t",
+    "strand", "PROXY_rsID")], file = paste0(output_path, "_proxies_vep.txt"), quote = FALSE, sep = "\t",
         row.names = FALSE, col.names = FALSE)
 
 
@@ -194,12 +179,12 @@ input_magma_rsID=input_magma[,c("rsID", "P", "N")]
 colnames(input_magma_rsID)=c("SNP", "P", "N")
 print(head("input magma rsID"))
 head(input_magma_rsID)
-write.table(input_magma_rsID,paste0(opt$output_path,"_input_magma_rsid.txt"), row.names=F, col.names=T, sep="\t", quote=F)
+write.table(input_magma_rsID,paste0(output_path,"_input_magma_rsid.txt"), row.names=F, col.names=T, sep="\t", quote=F)
 
 input_magma_CHRPOS=input_magma[,c("Name", "P", "N")]
 colnames(input_magma_CHRPOS)=c("SNP", "P", "N")
 print(head("input magma CHRPOS"))
 head(input_magma_CHRPOS)
-write.table(input_magma_CHRPOS,paste0(opt$output_path,"_input_magma_CHRPOS.txt"), row.names=F, col.names=T, sep="\t", quote=F)
+write.table(input_magma_CHRPOS,paste0(output_path,"_input_magma_CHRPOS.txt"), row.names=F, col.names=T, sep="\t", quote=F)
 
 cat("\n## Pre-processing finished ##\n")

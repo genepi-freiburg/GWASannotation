@@ -1,16 +1,6 @@
 
 ########################################   CODE FOR EXECUTION   #######################################
 
-### IMPORT RELEVANT PACKAGES
-library(GenomicAlignments)
-library(GenomicFeatures)
-library(GenomicRanges)
-library(biomaRt)
-library(data.table)
-
-cat("\nImported required packages.\n")
-
-
 ### READ IN SENTINEL AND PROXY DATA FILES AND FORMAT APPROPRIATELY
 
 # read in sentinel and proxy data files
@@ -51,6 +41,9 @@ sentinel_ranges <- GR_object_creator(sentinel_data$CHR, sentinel_data$START, sen
 
 # load a TxDb object containing ensembl genes according to build GRCh38 - this is based on the following
 load(file.path(gene_model_filename))
+# ensembl_genes is loaded, create a data frame for function gene_annotator
+# To make it accessible to the function - use <<-
+ensembl_genes.df <<- as.data.frame(ensembl_genes)
 
 # identify all genes that reside +/- X kb from the sentinel variants
 local_genes <- find_overlapping_genes(sentinel_ranges, ensembl_genes, interval_kb)
@@ -135,7 +128,7 @@ if(filtering_required == TRUE & length(r2_column) > 0) {
 VEP_IMPACTS_of_interest <- c("HIGH", "MODERATE")
 dim(VEP_annotations)
 VEP_annotations <- VEP_annotations[VEP_annotations[[IMPACT_column]] %in% VEP_IMPACTS_of_interest,]
-dim(VEP_annotations)
+cat("VEP results that have a HIGH or MODERATE IMPATCT :", nrow(VEP_annotations), "\n")
 # identify leads and proxies most likely to have a functional impact as per VEP annotation
 SNP_IMPACT_annotations <- VEP_integrator(sentinel_data, bottom_up_summary, VEP_annotations, sentinel_rsID_column, proxy_rsID_column,
                                          ensembl_gene_id_column, IMPACT_column)
@@ -153,26 +146,15 @@ coloc_eqtl_data <- data.table(read.table(file =
                                          file.path(COLOC_EQTL_filename),
                                        header = TRUE, quote = NULL, sep = "\t", stringsAsFactors = FALSE))
 
-if (length(eqtl_tissue_col) > 0) {
-coloc_eqtl_data <- coloc_eqtl_data[coloc_eqtl_data[[eqtl_tissue_col]] %in% eqtl_tissues_of_interest, ]
-}
+#if (length(eqtl_tissue_col) > 0) {
+#coloc_eqtl_data <- coloc_eqtl_data[coloc_eqtl_data[[eqtl_tissue_col]] %in% eqtl_tissues_of_interest, ]
+#}
 
-if (length(eqtl_sumstats_2_max_nlog10P_col) > 0) {
 coloc_eqtl_data <- coloc_eqtl_data[coloc_eqtl_data[[eqtl_sumstats_2_max_nlog10P_col]] > eqtl_sumstats_2_max_nlog10P_thresh, ]
-}
-
-if (length(eqtl_PP.H4.abf_col) > 0) {
 coloc_eqtl_data <- coloc_eqtl_data[coloc_eqtl_data[[eqtl_PP.H4.abf_col]] > eqtl_PP.H4.abf_thresh, ]
-}
-
-if (length(coloc_eqtl_gene_type_col) > 0) {
 coloc_eqtl_data <- coloc_eqtl_data[coloc_eqtl_data[[coloc_eqtl_gene_type_col]] %in% biotype_of_interest, ]
-}
-
 # filter out all records that do not have a "cis"
-if (length(eqtl_cis_trans_col)) {
 coloc_eqtl_data <- coloc_eqtl_data[coloc_eqtl_data[[eqtl_cis_trans_col]] %in% eqtl_cis_trans_sel, ]
-}
 
 coloc_eqtl_data <- as.data.frame(coloc_eqtl_data)
 coloc_eqtl_data <- coloc_eqtl_data[!duplicated(coloc_eqtl_data[,
@@ -187,9 +169,20 @@ COLOC_EQTL_annotations <- COLOC_integrator(sentinel_data, bottom_up_summary,
 # combine bottom_up_summary with the COLOC EQTL annotation
 bottom_up_summary <- cbind(bottom_up_summary, COLOC_EQTL_annotations)
 
-
 cat("\t- Coloc eQTL information have been integrated.\n")
 
+if(!is.na(tissues_interest)){
+    #create a data.frame with tissues of interest
+    coloc_eqtl_tissue_interest  <- coloc_eqtl_data[which(coloc_eqtl_data$Tissue %in% tissues_interest),]
+    # formatting so that it can be added to the bottom-up summary
+    COLOC_EQTL_tissues_int_annotations <- COLOC_integrator(sentinel_data, bottom_up_summary, coloc_eqtl_tissue_interest, coloc_eqtl_sentinel_rsID_col,
+                                             coloc_eqtl_ensembl_gene_id_col, QTL_type = "eQTL_tissues_interest")
+
+    # combine bottom_up_summary with the COLOC EQTL annotation
+    bottom_up_summary <- cbind(bottom_up_summary, COLOC_EQTL_tissues_int_annotations)
+
+    cat("\t- Coloc eQTL tissues of interest information have been integrated.\n")
+}
   # read in coloc pQTL file
 coloc_pqtl_data <- data.table(read.table(file =
                                          file.path(COLOC_PQTL_filename),
@@ -286,6 +279,13 @@ write.table(cooccurring_candidates, file = file.path(output_dir, "OUTPUT_cooccur
 
 # HIGH and MODERATE VEP dataframe
 write.table(VEP_annotations, file = file.path(output_dir, "OUTPUT_VEP_IMPACT_annotations.txt"),
+            quote = FALSE, row.names = FALSE, sep = "\t")
+
+# coloc_eQTL
+write.table(COLOC_EQTL_annotations, file = file.path(output_dir, "OUTPUT_COLOC_EQTL_annotations.txt"),
+            quote = FALSE, row.names = FALSE, sep = "\t")
+# coloc_pQTL
+write.table(COLOC_PQTL_annotations, file = file.path(output_dir, "OUTPUT_COLOC_PQTL_annotations.txt"),
             quote = FALSE, row.names = FALSE, sep = "\t")
 
 # lead eQTLs

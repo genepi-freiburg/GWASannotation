@@ -1,20 +1,9 @@
-library(GenomicRanges)
-library(biomaRt)
-library(data.table)
-suppressMessages(library(optparse))
-
-option_list = list(
-  make_option("--PoPS_results", action="store", default=NA, type='character', help="PoPS_results.preds [required]"),
-  make_option("--output_path", action="store", default=NA, type='character', help="output path [required]")
-)
-opt = parse_args(OptionParser(option_list=option_list))
-
-prefix <- sub(".preds*", "", basename(opt$PoPS_results))
+prefix <- sub(".preds*", "", basename(PoPS_results))
 print(prefix)
 
-rdata.file <- paste0(opt$output_path, "_PoPS.RData")
+rdata.file <- paste0(output_path, "_PoPS.RData")
 
-res <- read.table(opt$PoPS_results, header=TRUE, sep="\t")
+res <- read.table(PoPS_results, header=TRUE, sep="\t")
 print("Pops results (head)")
 print(head(res))
 

@@ -3,7 +3,8 @@
 # Define input and output directories
 input_file="$1" #input file for magma
 output_path="$2" #path for output + prefix
-bfile="${3:-/data/studies/06_UKBB/01_Data/02_Genetic_Data/UKBB_150k_RandomSubset_Cleaned/hg38/UKBB_14k_hg38_chr1-22}"  # Default bfile if not provided #hg38
+bfile="$3"
+#bfile="${3:-/data/studies/06_UKBB/01_Data/02_Genetic_Data/UKBB_150k_RandomSubset_Cleaned/hg38/UKBB_14k_hg38_chr1-22}"  # Default bfile if not provided #hg38
 magma_annotated_genes="$4"
 
 if [ ! -f "$magma_annotated_genes" ]; then
@@ -49,7 +50,6 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-# Run PoPS
 echo "Run  PoPS"
 pops_command="python /data/programs/bin/gwas/pops_v0.2/pops.py"
 bn=$(basename "$output_path")
@@ -59,10 +59,8 @@ $pops_command \
   --feature_mat_prefix /data/programs/bin/gwas/gene_features/features_munged/pops_features \
   --num_feature_chunks 9 \
   --magma_prefix $out_magma \
-  --out_prefix $out \
+  --out_prefix $output_path \
   --verbose
-
-#--gene_annot_path Path to gene annotation table. For the purposes of this script, only require that there is an ENSGID column --> therefore genome build shouldnt matter
 
 # Check exit status
 if [ $? -ne 0 ]; then

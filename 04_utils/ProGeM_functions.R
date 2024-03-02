@@ -13,7 +13,7 @@ LD_region_range_finder <- function(sentinel_table, proxy_table, overhang) {
   LD_ranges <- matrix(nrow = length(unique_sentinels), ncol = 3, 
                       dimnames = list(unique_sentinels, c("CHR", "START", "END")))
   for(i in 1:length(unique_sentinels)) {
-    print(i)
+    #print(i)
     LD_ranges[i, 1] <- sentinel_table$CHR[which(sentinel_table$rsID == unique_sentinels[i])]
     LD_ranges[i, 2] <- min(proxy_table$PROXY_START[which(proxy_table$LEAD_rsID == unique_sentinels[i])],
                            sentinel_table$START[which(sentinel_table$rsID == unique_sentinels[i])])
@@ -35,20 +35,30 @@ find_overlapping_genes <- function(ranges, gene_model, overhang) {
 
 
 gene_annotator <- function(ids) {
-  ensembl = useMart(biomart="ENSEMBL_MART_ENSEMBL", path="/biomart/martservice", 
-                    dataset="hsapiens_gene_ensembl")
-  gene_info <- data.table(getBM(attributes = c("ensembl_gene_id", "hgnc_symbol", "gene_biotype", 
-                                               "chromosome_name"), filters = "ensembl_gene_id", 
-                                values = unique(ids), mart = ensembl))
+  
+   #ensembl = useMart(biomart="ENSEMBL_MART_ENSEMBL", path="/biomart/martservice",
+   #                  dataset="hsapiens_gene_ensembl")
+   #gene_info <- data.table(getBM(attributes = c("ensembl_gene_id", "hgnc_symbol", "gene_biotype",
+   #                                             "chromosome_name"), filters = "ensembl_gene_id",
+   #                              values = unique(ids), mart = ensembl))
+   # format the gene_info object slightly
+   
+  # Rewritten - use ensembl_genes.df for lookup instead of biomaRt
+  gene_info <- ensembl_genes.df[unique(ids), c("gene_id", "hgnc_symbol",
+     "gene_biotype", "seqnames")]
+  names(gene_info)[names(gene_info) == "gene_id"] <- "ensembl_gene_id"
+  names(gene_info)[names(gene_info) == "seqnames"] <- "chromosome_name"
+  gene_info <- data.table(gene_info)
+  
   # format the gene_info object slightly
   if(length(grep("CHR", gene_info$chromosome_name))) {
-    gene_info <- gene_info[-grep("CHR", gene_info$chromosome_name),]
+   gene_info <- gene_info[-grep("CHR", gene_info$chromosome_name),]
   }
   gene_info[is.na(gene_info)] <- "-"
   gene_info[gene_info == ""] <- "-"
   gene_info <- gene_info[,c(1:3)]
   return(gene_info)
-}
+ }
 
 
 gene_variant_distance_finder <- function(sentinel_variant_ranges, local_gene_ranges) {

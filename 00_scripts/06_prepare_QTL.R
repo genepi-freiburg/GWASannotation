@@ -1,24 +1,13 @@
-library(readxl)
-library(biomaRt)
-library(writexl)
-suppressMessages(library(optparse))
+#ensembl = useMart(biomart="ENSEMBL_MART_ENSEMBL",
+#                  dataset="hsapiens_gene_ensembl")
 
-option_list = list(
-  make_option("--input_path", action="store", default=FALSE, type='character', help="Path to intput [required]"))
-opt = parse_args(OptionParser(option_list=option_list))
-
-
-ensembl = useMart(biomart="ENSEMBL_MART_ENSEMBL",
-                  dataset="hsapiens_gene_ensembl")
-
-input_path=opt$input_path
+input_path=output_path
 tophit.file=paste0(input_path, "_sentinel.txt")
 regions.file=paste0(input_path, "_coloc_regions.RDS")
-folder_path <- dirname(input_path)
-coloc_path <- paste0(folder_path, "/coloc/output/")
 
-inc.datasets <- c("GTEXv8", "Kidney_eQTL","ARIC_pGWAS", "Icelanders_pGWAS", "UKB_PPP_EUR")
-
+#inc.datasets <- c("GTEXv8", "Kidney_eQTL","ARIC_pGWAS", "Icelanders_pGWAS", "UKB_PPP_EUR")
+inc.datasets <- datasets_coloc
+print(inc.datasets)
 merge_coloc_sentinel <- function(coloc_path, dataset, regions.file, tophit.file) {
     summary.file <- paste0(coloc_path, dataset, ".RDS")
     # Check if files exist
@@ -77,9 +66,10 @@ process_dataset_pQTL <- function(coloc_path, dataset, regions.file, tophit.file)
     data$Name <- paste(data$CHR_var, data$snpPOS, sep = ":")
     print(all(inc.cols %in% names(data)))
     if (dataset == "ARIC_pGWAS") {
-        gene_info <- getBM(attributes = c("ensembl_gene_id", "hgnc_symbol"),
-                           filters = "hgnc_symbol",
-                           values = unique(data$ARIC_pGWAS_entrezgenesymbol), mart = ensembl)
+        #gene_info <- getBM(attributes = c("ensembl_gene_id", "hgnc_symbol"),
+        #                   filters = "hgnc_symbol",
+        #                   values = unique(data$ARIC_pGWAS_entrezgenesymbol), mart = ensembl)
+        gene_info <- ensembl_genes.df[unique(data$ARIC_pGWAS_entrezgenesymbol), c("gene_id", "hgnc_symbol")]
         print(gene_info)
         data <- merge(data, gene_info, by.x="ARIC_pGWAS_entrezgenesymbol",
                       by.y="hgnc_symbol")
@@ -100,7 +90,7 @@ process_dataset_pQTL <- function(coloc_path, dataset, regions.file, tophit.file)
 }
 
 # eQTL
-inc.datasets_eQTL <- c("GTEXv8", "Kidney_eQTL")
+inc.datasets_eQTL <- eQTL_datasets_coloc
 out.txt_eQTL <- paste0(coloc_path, "input_Progem_eQTL.txt")
 out.df_eQTL <- data.frame()
 
@@ -114,7 +104,7 @@ write.table(x=out.df_eQTL, file = out.txt_eQTL, quote=FALSE, sep = "\t", row.nam
 print(out.txt_eQTL)
 
 # pQTL
-inc.datasets_pQTL <- c("ARIC_pGWAS", "Icelanders_pGWAS", "UKB_PPP_EUR")
+inc.datasets_pQTL <- pQTL_datasets_coloc
 out.txt_pQTL <- paste0(coloc_path, "input_Progem_pQTL.txt")
 out.df_pQTL <- data.frame()
 

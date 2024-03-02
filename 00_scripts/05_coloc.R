@@ -1,25 +1,15 @@
-# setup
-library(parallel)
-library(coloc)
-library(data.table)
-devtools::load_all("/data/programs/pipelines/genepicoloc/genepicoloc_package")
-sapply(list.files("/data/programs/pipelines/genepicoloc/custom_scripts/source", full.names = T), source)
-suppressMessages(library(optparse))
-
-option_list = list(
-  make_option("--input_path", action="store", default=FALSE, type='character', help="Path to intput [required]"))
-opt = parse_args(OptionParser(option_list=option_list))
-
 # Set parameters
-file <- paste0(opt$input_path, "_subset.txt.gz")
+cat("Colocalization analysis \n")
+file <- paste0(output_path, "_subset.txt.gz")
 #files <- "/data/programs/pipelines/GWASannotation/02_output/test/test_subset.txt.gz"
-regions <- paste0(opt$input_path, "_coloc_regions.RDS")
+regions <- paste0(output_path, "_coloc_regions.RDS")
 sumstats_1_type="quant"
 
-folder_path <- dirname(opt$input_path)
+folder_path <- dirname(output_path)
 folder_path <- paste0(folder_path, "/coloc")
 dir.create(folder_path)
 setwd(folder_path)
+
 # Run colocs
 
 
@@ -33,7 +23,9 @@ sumstats_1_args <- data.frame(sumstats_1_file = file,
 sumstats_1_args <- data.frame(sumstats_1_args, regions[["coloc_regions_PASS"]])
 
 ## ---- echo=T, eval = T--------------------------------------------------------
-selected_studies <- c("ARIC_pGWAS", "GTEXv8", "Icelanders_pGWAS", "Kidney_eQTL", "UKB_PPP_EUR") 
+#selected_studies <- c("ARIC_pGWAS", "GTEXv8", "Icelanders_pGWAS", "Kidney_eQTL", "UKB_PPP_EUR")
+selected_studies <- datasets_coloc
+#cat("coloc datasets: ", selected_studies, "\n")
 list_to_create_args <- list_to_create_args_list[selected_studies]
 list_of_args <- lapply(list_to_create_args, function(x) {
   do.call(create_coloc_params_df,
@@ -93,19 +85,14 @@ parallel_wrapper <- function(args_df, N_cpus_per_node = 10, output_folder="outpu
                           print(i); do.call(coloc_wrapper, c(params_df[i,], extra_args))
                         })
   } else {
-    print("coloc_out")
-    
-    print(head(params_df))
     coloc_out <- parallel::mclapply(1:nrow(params_df),
                                     function(i) {
                                       do.call(coloc_wrapper, c(params_df[i,], extra_args))
                                     }, mc.cores = N_cpus_per_node)
                                     
-    print(head(coloc_out))
   }
   if (do_rbind) {
-    print("do_rbind")
-    print(head(coloc_out))
+
     coloc_out <- do.call(rbind, lapply(coloc_out, function(x) {do.call(rbind, x)}))
   }
   if (do_annotate) {
@@ -122,7 +109,6 @@ parallel_wrapper <- function(args_df, N_cpus_per_node = 10, output_folder="outpu
     saveRDS(coloc_out, paste0(EXPERIMENT, "_no_annotation.RDS"))
   }
   if (save_RDS) {
-    print("save_RDS")
     saveRDS(coloc_out, paste0(EXPERIMENT, ".RDS"))
   }
   return(coloc_out)
@@ -186,12 +172,12 @@ coloc_wrapper <- function(CHR_var, BP_START_var, BP_STOP_var,
                                      sumstats_2_file, sumstats_2_max_nlog10P)
       } else {
         # run coloc if both sumstats have significant SNPs
-        coloc_output <- run_coloc(sumstats_1_df = sumstats_1_df,
+        coloc_output <- invisible(run_coloc(sumstats_1_df = sumstats_1_df,
                                   sumstats_1_type = sumstats_1_type,
                                   sumstats_1_sdY = sumstats_1_sdY,
                                   sumstats_2_df = sumstats_2_df,
                                   sumstats_2_type = sumstats_2_type,
-                                  sumstats_2_sdY = sumstats_2_sdY)
+                                  sumstats_2_sdY = sumstats_2_sdY))
         coloc_output$region <- data.frame(CHR_var = CHR_var,
                                           BP_START_var = BP_START_var,
                                           BP_STOP_var = BP_STOP_var,
@@ -201,7 +187,7 @@ coloc_wrapper <- function(CHR_var, BP_START_var, BP_STOP_var,
                                           sumstats_2_max_nlog10P = sumstats_2_max_nlog10P)
 
         if (do_process_wrapper) {
-          coloc_output <- process_wrapper(coloc_output)
+          coloc_output <- invisible(process_wrapper(coloc_output))
         }
       }
     }

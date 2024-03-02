@@ -1,59 +1,28 @@
-# setup
-library(parallel)
-library(coloc)
-library(data.table)
-devtools::load_all("/data/programs/pipelines/genepicoloc/genepicoloc_package")
-sapply(list.files("/data/programs/pipelines/genepicoloc/custom_scripts/source", full.names = T), source)
-suppressMessages(library(optparse))
-
-option_list = list(
-  make_option("--input_path", action="store", default=FALSE, type='character', help="Path to intput [required]"))
-opt = parse_args(OptionParser(option_list=option_list))
-
 # Set parameters
-#files <- paste0(opt$input_path, "_subset.RDS")
+file <- paste0(output_path, "_subset.txt.gz")
 #files <- "/data/programs/pipelines/GWASannotation/02_output/test/test_subset.txt.gz"
-#regions <- paste0(opt$input_path, "_coloc_regions.RDS")
+regions <- paste0(output_path, "_coloc_regions.RDS")
 sumstats_1_type="quant"
-#sumstats_1_liftOver_args <- do.call(rbind, lapply(1:length(files), function(i) {
-#  sumstats_1_liftOver_args <- merge(data.frame(sumstats_1_file = files[i],
-#                                      sumstats_1_function = "query_sumstats_1",
-#                                      sumstats_1_type = sumstats_1_type,
-#                                      sumstats_1_sdY = NA),
-#                           subset(readRDS(regions[i])$coloc_regions, comment == "PASS")[,c("CHR_var", "BP_START_var", "BP_STOP_var")])
-#}))
-#list_of_args <- lapply(list_to_create_args_list[c("ARIC_pGWAS", "GTEXv8", "Icelanders_pGWAS", "Kidney_eQTL", "UKB_PPP_EUR")], function(x) {
-#  do.call(create_coloc_params_df, c(x, list(sumstats_1_args = sumstats_1_liftOver_args,
-#                                            do_annotate_sumstats_1 = F
-#  )))
-#})
 
-folder_path <- dirname(opt$input_path)
+folder_path <- dirname(output_path)
 folder_path <- paste0(folder_path, "/coloc")
-folder_path <- paste0("/data/programs/pipelines/GWASannotation/02_output/test","/coloc")
 dir.create(folder_path)
 setwd(folder_path)
 # Run colocs
-coloc_out <- Map(parallel_wrapper, list_of_args, debug_mode = F, dry_run = T, N_cpus_per_node = 10) #dry_run = T only for the first time, then put dry_run = F
-#debug_mode = T
-#run_slurm = FALSE,
-
 
 
 ####################################
-file <- "/data/programs/pipelines/GWASannotation/02_output/test/test_subset.txt.gz"
-regions <- readRDS("/data/programs/pipelines/GWASannotation/02_output/test/test_coloc_regions.RDS")
+regions <- readRDS(regions)
 
 sumstats_1_args <- data.frame(sumstats_1_file = file,
                               sumstats_1_function = "query_sumstats_1",
-                              sumstats_1_type = "quant",
+                              sumstats_1_type = sumstats_1_type,
                               sumstats_1_sdY = NA)
 sumstats_1_args <- data.frame(sumstats_1_args, regions[["coloc_regions_PASS"]])
-## ---- echo=T, eval = T--------------------------------------------------------
-str(list_to_create_args_list, 1)
 
 ## ---- echo=T, eval = T--------------------------------------------------------
-selected_studies <- c("ARIC_pGWAS", "GTEXv8", "Icelanders_pGWAS", "Kidney_eQTL") # , "UKB_PPP_EUR", "FinnGen_r9")
+#selected_studies <- c("ARIC_pGWAS", "GTEXv8", "Icelanders_pGWAS", "Kidney_eQTL", "UKB_PPP_EUR")
+selected_studies <- datasets_coloc
 list_to_create_args <- list_to_create_args_list[selected_studies]
 list_of_args <- lapply(list_to_create_args, function(x) {
   do.call(create_coloc_params_df,
@@ -61,18 +30,10 @@ list_of_args <- lapply(list_to_create_args, function(x) {
 })
 str(list_of_args, 1)
 
-## ---- echo=T, eval = T--------------------------------------------------------
-#coloc_out <- Map(parallel_wrapper, list_of_args)
-
-#coloc_wrapper(sumstats_1_file="/data/programs/pipelines/GWASannotation/02_output/test/test_subset.txt.gz", sumstats_1_function=query_sumstats_1, sumstats_1_type="quant", sumstats_1_sdY=NA, CHR_var=8, BP_START_var=23284587, BP_STOP_var=24284587, sumstats_2_file="/data/public_resources/ARIC_pQTL/EA/SeqId_10000_28.PHENO1.glm.linear.gz", sumstats_2_function=query_ARIC_pGWAS, sumstats_2_type="quant", sumstats_2_sdY=NA)
-
-
-#Name    rsID    CHR    POS    A1    A2    BETA    SE    nlog10P    AF    N
-############################
 parallel_wrapper <- function(args_df, N_cpus_per_node = 10, output_folder="output",
                              do_rbind = T, do_annotate = NULL, do_annotate_sumstats_1 = NULL,
                              save_RDS = T, save_RDS_no_annotation = F,
-                             dry_run = T, debug_mode = F,
+                             dry_run = F, debug_mode = F,
                              min_nlog10P = -log10(1e-5),
                              run_slurm = NULL) {
   # Setup
@@ -274,9 +235,5 @@ coloc_wrapper <- function(CHR_var, BP_START_var, BP_STOP_var,
 coloc_out <- Map(parallel_wrapper, list_of_args)
 
 summarize_coloc(selected_studies=selected_studies,
-                output_folder = "output_coloc",
+                output_folder = "output",
                 remove_dirname = F)
-
-
-#coloc_wrapper(sumstats_1_file="/data/programs/pipelines/GWASannotation/02_output/test/test_subset.txt.gz", sumstats_1_function=query_sumstats_1, sumstats_1_type="quant", sumstats_1_sdY=NA, CHR_var=8, BP_START_var=23284587, BP_STOP_var=24284587, sumstats_2_file="/data/public_resources/ARIC_pQTL/EA/SeqId_10000_28.PHENO1.glm.linear.gz", sumstats_2_function=query_ARIC_pGWAS, sumstats_2_type="quant", sumstats_2_sdY=NA)
-
