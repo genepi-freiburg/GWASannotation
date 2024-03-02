@@ -1,0 +1,1 @@
+PROXY_rsID	search_term	variant_id	gene_id	tss_distance	ma_samples	slope_se	tissue
