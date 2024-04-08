@@ -8,7 +8,7 @@
 #  - magma input
 #  - filtered regions file for coloc!
 # **** take genome version into consideration????
-##################################################################
+#################################################################
 
 #####################################
 # load input file
@@ -16,6 +16,7 @@ sumstats <- readRDS(GWAS_RDS)
 
 print("head gwas")
 head(sumstats)
+
 
 #####################################
 # loci regions - using function from coloc
@@ -50,6 +51,7 @@ tophit$strand <- "+"
 
 tophit$allele <- paste(tophit$A1, tophit$A2, sep = "/")
 
+# If theres no rsID, create "chr:start" annotation
 tophit<- tophit %>%
     mutate(ID = ifelse(startsWith(rsID, "rs"), rsID, paste0(CHR_var, ":", POS)))
 
@@ -62,7 +64,7 @@ write.table(x=tophit, file = paste0(output_path, "_sentinel.txt"),
 #####################################
 # proxy file - and vep input file
 cat("\n## Creating proxie file ## \n")
-#3.2. A tab-separated .txt file containing rsIDs, chromosomes, and GRCh37 coordinates (both start and end) of proxies for your sentinel variants; along with the corresponding sentinel rsIDs and r2 value across six columns in total with the below column names. Your proxies can be derived either directly from your sample or, for example, from 1000 genomes data. If proxies have not been pre-filtered prior to input, then ProGeMM will filter based on a user-defined r2 threshold (default r2 is 0.8) if desired.
+#3.2. A tab-separated .txt file containing rsIDs, chromosomes, and GRCh38 coordinates (both start and end) of proxies for your sentinel variants; along with the corresponding sentinel rsIDs and r2 value across six columns in total with the below column names. Your proxies can be derived either directly from your sample or, for example, from 1000 genomes data. If proxies have not been pre-filtered prior to input, then ProGeMM will filter based on a user-defined r2 threshold (default r2 is 0.8) if desired.
 #PROXY_rsID    PROXY_CHR    PROXY_START    PROXY_END    LEAD_rsID    r2
 #rs602950    1    20915531    20915531    rs532545    0.991
 #rs1253904    1    20913519    20913519    rs532545    0.963
@@ -81,87 +83,50 @@ cat("\n## Creating proxie file ## \n")
 
 #! REGENIE: reference allele (allele 0), alternative allele (allele 1)
 
-source("/data/programs/scripts/SNiPA-annotation-new/snipa_anno_ext.R")
+#Getting proxy SNPs based on sentinel.txt file previously created
+#SnIPA uses hg37 - using plink for hg38
+#plink2 doesnt support --ld-snp-list, need to use plink1
+#if no bfile provided, will use /data/studies/06_UKBB/01_Data/02_Genetic_Data/UKBB_150k_RandomSubset_Cleaned/hg38/UKBB_14k_hg38_chr1-22
+system(paste0("/data/programs/bin/gwas/plink/plink-1.90_beta6.20/plink --bfile ", bfile, " --r2 --ld-snp-list ", output_path, "_sentinel.txt --out ", output_path, "_ld_results"))
+ld=read.table(paste0(output_path, "_ld_results.ld"),header=T)
+
 r2.cutoff <- 0.8 #*** ADD parameter with cutoff
-rm(tophit)
-tophit=regions
-#In cases where there is no rsID for a sentinel variant then the notation "chr:start" should be used (i.e., 1:11856378).
-tophit <- tophit %>%
-    mutate(ID = ifelse(startsWith(rsID, "rs"), rsID, paste0(CHR_var, ":", POS)))
 
-
-
-#res <- data.frame()
-res <- data.frame(
-  CHR = numeric(),
-  POS1 = numeric(),
-  POS2 = numeric(),
-  R2 = numeric(),
-  D = numeric(),
-  DPRIME = numeric(),
-  RSID = character(),
-  RSALIAS = character(),
-  MINOR = character(),
-  MAF = numeric(),
-  MAJOR = character(),
-  CMMB = numeric(),
-  CM = numeric(),
-  stringsAsFactors = FALSE)
-for (i in 1:nrow(tophit)) {
-    chr <- tophit[i, "CHR_var"]
-    pos <- tophit[i, "POS"]
-    cat(paste0("leadSNP: ", tophit[i, "rsID"], "\n"))
-    ld.df <- ld.basic(snp_chr=chr, snp_pos1=pos, snp_pos2=pos)
-    #print(colnames(ld.df))
-    if (is.null(ld.df)) {
-        print("ld.df is null")
-        ld.df <- c(paste0("chr",chr), pos, pos, 1, NA, NA, tophit[i, "rsID"], NA,
-             tophit[i, "A1"],  tophit[i, "AF"],tophit[i, "A2"],NA,NA,tophit[i, "rsID"])
-          
-        res[nrow(res) + 1,] <- ld.df
-        next
-    }
-    print("nrow ld.df")
-    print(nrow(ld.df))
-    ld.df$LEAD_rsID <- tophit[i, "rsID"]
-    res <- rbind(res, ld.df)
-}
-
-res <- res[res$R2 > r2.cutoff, ]
-
-#remove "chr" from chromosome name
-res$CHR <- sub(pattern="chr", replacement="", x=res$CHR, fixed=TRUE)
-
-
-res <- res[, c("RSID", "CHR", "POS2", "LEAD_rsID","MINOR","MAJOR","R2")]
-
+ld_results=ld[which(ld$R2>r2.cutoff),]
+#sumstats_filt=readRDS(paste0(output_path, "_subset.RDS"))
+sumstats_filt=as.data.frame(sumstats_filt)
+ld_results=merge(ld_results, sumstats_filt[,c("rsID", "A1","A2")], by.x="SNP_B", by.y="rsID")
+ld_results$END =as.numeric(ld_results$BP_B) + nchar(as.character(ld_results$A2)) - 1
+proxy_data <- data.frame(
+  PROXY_rsID = ld_results$SNP_B,
+  PROXY_CHR = ld_results$CHR_B,
+  PROXY_START = ld_results$BP_B,
+  PROXY_END = ld_results$END,
+  LEAD_rsID = ld_results$SNP_A,
+  r2 = ld_results$R2
+)
+#  PROXY_END = as.numeric(ld_results$PROXY_START) + nchar(as.character(ld_results$A2)) - 1,
 print("Dimension proxies data:")
-dim(res) #*** this data also include the indexSNPs! should it be removed?
+dim(proxy_data)
 
-names(res)[names(res)=="RSID"] <- "PROXY_rsID"
-names(res)[names(res)=="CHR"] <- "PROXY_CHR"
-names(res)[names(res)=="POS2"] <- "PROXY_START"
-names(res)[names(res)=="R2"] <- "r2"
-res$PROXY_END <- as.numeric(res$PROXY_START) + nchar(as.character(res$MINOR)) - 1
 
 cat("head proxie file \n")
-head(res[c("PROXY_rsID", "PROXY_CHR", "PROXY_START", "PROXY_END","LEAD_rsID", "r2")])
-write.table(x=res[c("PROXY_rsID", "PROXY_CHR", "PROXY_START", "PROXY_END",
-    "LEAD_rsID", "r2")], file= paste0(output_path, "_proxies.txt"), quote = FALSE, sep = "\t",
+head(proxy_data)
+write.table(proxy_data, file= paste0(output_path, "_proxies.txt"), quote = FALSE, sep = "\t",
     row.names = FALSE, col.names = TRUE)
 
 
-res$strand <- "+"
-res$allele <- paste(res$MINOR, res$MAJOR, sep = "/")
 
+ld_results$strand <- "+"
+ld_results$allele <- paste(ld_results$A1, ld_results$A2, sep = "/")
+vep_data <- ld_results[,c("CHR_B", "BP_B", "END", "allele",
+"strand", "SNP_B")]
 cat("head vep input file \n")
-head(res[c("PROXY_CHR", "PROXY_START", "PROXY_END", "allele",
-"strand", "PROXY_rsID")])
+head(vep_data)
 #dim(res)
 #dim(res[!duplicated(res),])
 
-write.table(x=res[c("PROXY_CHR", "PROXY_START", "PROXY_END", "allele",
-    "strand", "PROXY_rsID")], file = paste0(output_path, "_proxies_vep.txt"), quote = FALSE, sep = "\t",
+write.table(vep_data, file = paste0(output_path, "_proxies_vep.txt"), quote = FALSE, sep = "\t",
         row.names = FALSE, col.names = FALSE)
 
 
@@ -179,12 +144,12 @@ input_magma_rsID=input_magma[,c("rsID", "P", "N")]
 colnames(input_magma_rsID)=c("SNP", "P", "N")
 print(head("input magma rsID"))
 head(input_magma_rsID)
-write.table(input_magma_rsID,paste0(output_path,"_input_magma_rsid.txt"), row.names=F, col.names=T, sep="\t", quote=F)
+write.table(input_magma_rsID,paste0(output_path,"_input_magma.txt"), row.names=F, col.names=T, sep="\t", quote=F)
 
-input_magma_CHRPOS=input_magma[,c("Name", "P", "N")]
-colnames(input_magma_CHRPOS)=c("SNP", "P", "N")
-print(head("input magma CHRPOS"))
-head(input_magma_CHRPOS)
-write.table(input_magma_CHRPOS,paste0(output_path,"_input_magma_CHRPOS.txt"), row.names=F, col.names=T, sep="\t", quote=F)
+#input_magma_CHRPOS=input_magma[,c("Name", "P", "N")]
+#colnames(input_magma_CHRPOS)=c("SNP", "P", "N")
+#print(head("input magma CHRPOS"))
+#head(input_magma_CHRPOS)
+#write.table(input_magma_CHRPOS,paste0(output_path,"_input_magma_CHRPOS.txt"), row.names=F, col.names=T, sep="\t", quote=F)
 
 cat("\n## Pre-processing finished ##\n")

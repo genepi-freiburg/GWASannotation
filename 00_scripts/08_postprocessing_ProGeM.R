@@ -1,11 +1,79 @@
-# Reading and processing for bottom_up, top_down, and pops
-bottom_up.file <- paste0(output_dir, "OUTPUT_bottom_up_summary.txt")
-top_down.file <- paste0(output_dir, "OUTPUT_top_down_scores.txt")
-pops.file <- filename_PoPS
-tophit.file <- sentinel_filename
-summary <- paste0(output_dir, "GWASAnno_summary.txt")
+library(optparse)
+library(writexl)
+library(dplyr)
+library(readxl)
+
+option_list <- list(
+  make_option("--output_path2", action="store", default=NA, type='character', help="output_path for GWASAnno full path [required]"),
+  make_option("--output_file_name", action="store", default="GWASAnno_summary.txt", type='character', help="output file name [default='GWASAnno_summary.txt]'"),
+  make_option("--tissues_interest", action="store", default=NA, type='character', help="tissues_interest [default=NA]"),
+  make_option("--nearest", action="store", default="1", type='numeric', help="nearest_score [default=1]"),
+  make_option("--second_nearest", action="store", default="0.5", type='numeric', help="second_nearest [default=0.5]"),
+  make_option("--third_nearest", action="store", default="0.25", type='numeric', help="second_nearest [default=0.25]"),
+  make_option("--LD_overlapping", action="store", default="1", type='numeric', help="LD_overlapping [default=1"),
+  make_option("--lead_IMPACT", action="store", default="1", type='numeric', help="lead_IMPACT [default=1]"),
+  make_option("--coloc_eQTL_tissues_interest", action="store", default="1", type='numeric', help="coloc_eQTL_tissues_interest [default=1]"),
+  make_option("--lead_eQTL", action="store", default="0.25", type='numeric', help="lead_eQTL or proxie_eQTL [default=0.25]"),
+  make_option("--coloc_pQTL", action="store", default="1", type='numeric', help="coloc_pQTL [default=1]"),
+  make_option("--PoPS_top1", action="store", default="1", type='numeric', help="PoPS_top1 [default=1]"),
+  make_option("--PoPS_top2", action="store", default="0.5", type='numeric', help="PoPS_top2 [default=0.5]"),
+  make_option("--PoPS_top3", action="store", default="0.25", type='numeric', help="PoPS_top3 [default=0.5]")
+)
 
 
+opt_used <- FALSE
+tryCatch({
+  print("using optparse")
+  opt <- parse_args(OptionParser(option_list=option_list))
+  output_path <- opt$output_path
+  folder_path <- dirname(opt$output_path)
+  output_dir <- paste0(folder_path, "/GWASAnno/")
+  tissues_interest <- paste0(opt$tissues_interest,"_sentinel.txt")
+  
+  # Reading and processing for bottom_up, top_down, and pops with optparse
+  bottom_up.file <- paste0(output_dir, "OUTPUT_bottom_up_summary.txt")
+  top_down.file <- paste0(output_dir,  "/OUTPUT_top_down_scores.txt")
+  pops.file <- paste0(opt$output_path,"_PoPS.RData")
+  tophit.file <- paste0(opt$output_path,"_sentinel.txt")
+  summary <- paste0(output_dir, opt$output_file_name)
+  #scoring
+  nearest_score <-  opt$nearest
+  second_nearest_score <-  opt$second_nearest
+  third_nearest_score <-  opt$third_nearest
+  LD_overlapping_score <-  opt$LD_overlapping
+  lead_IMPACT_score <- opt$lead_IMPACT
+  coloc_eQTL_tissues_interest_score <- opt$coloc_eQTL_tissues_interest
+  lead_eQTL_score <- opt$lead_eQTL
+  coloc_pQTL_score <- opt$coloc_pQTL
+  PoPS_top1_score <- opt$PoPS_top1
+  PoPS_top2_score <- opt$PoPS_top2
+  PoPS_top3_score <- opt$PoPS_top3
+  opt_used <- TRUE
+}, error = function(e) {
+  cat("Using alternative method for argument parsing.\n")
+}, finally = {
+    if (!opt_used) {
+        # Reading and processing for bottom_up, top_down, and pops
+        bottom_up.file <- paste0(output_dir, "OUTPUT_bottom_up_summary.txt")
+        print(bottom_up.file)
+        top_down.file <- paste0(output_dir, "OUTPUT_top_down_scores.txt")
+        pops.file <- filename_PoPS
+        tophit.file <- sentinel_filename
+        summary <- paste0(output_dir, "GWASAnno_summary.txt")
+        #scoring
+        nearest_score <-  1
+        second_nearest_score <-  0.5
+        third_nearest_score <-  0.25
+        LD_overlapping_score <- 1
+        lead_IMPACT_score <- 1
+        coloc_eQTL_tissues_interest_score <- 1
+        lead_eQTL_score <- 0.25
+        coloc_pQTL_score <- 1
+        PoPS_top1_score <- 1
+        PoPS_top2_score <- 0.5
+        PoPS_top3_score <- 0.25
+    }
+})
 
 bottom_up <- read.table(bottom_up.file, header=TRUE, sep="\t")
 bottom_up[bottom_up$hgnc_symbol != "-", ]
@@ -101,7 +169,6 @@ for (rsid in unique(m$LEAD_rsID)) {
     locus <- m[m$LEAD_rsID== rsid, ]
     head(locus)
     #print(dim(locus))
-
     for (i in 1:nrow(locus)) {
         gene <- locus[i, "hgnc_symbol"]
         # print(gene)
@@ -110,68 +177,67 @@ for (rsid in unique(m$LEAD_rsID)) {
         cnt <- 0
         if (locus[i, "nearest"] == 1) {
             evidence <- c(evidence, "nearest")
-            cnt <- cnt + 1
+            cnt <- cnt + nearest_score
         }
         if (locus[i, "second_nearest"] == 1) {
             evidence <- c(evidence, "2nd_nearest")
-            cnt <- cnt + 0.5
+            cnt <- cnt + second_nearest_score
         }
         if (locus[i, "third_nearest"] == 1) {
             evidence <- c(evidence, "3rd_nearest")
-            cnt <- cnt + 0.25
+            cnt <- cnt + third_nearest_score
         }
         if (locus[i, "LD_overlapping"] == 1) {
             evidence <- c(evidence, "LD_overlap")
-            cnt <- cnt + 1
+            cnt <- cnt + LD_overlapping_score
         }
         
         if (locus[i, "lead_IMPACT"]==1 || locus[i, "proxy_IMPACT"]==1) {
             evidence <- c(evidence, "IMPACT_moderate_high")
-            cnt <- cnt + 1
+            cnt <- cnt + lead_IMPACT_score
         }
         #if including coloc_eQTL_tissue_interest
-        #if(!is.na(tissues_interest)){
         if (any(!is.na(tissues_interest))){
             if (locus[i, "coloc_eQTL_tissues_interest"] == 1) {
                 evidence <- c(evidence, "coloc_eQTL_tissues_interest")
-                cnt <- cnt + 1
+                cnt <- cnt + coloc_eQTL_tissues_interest_score
             } else {
                 if (locus[i, "coloc_eQTL"] == 1) {
                     evidence <- c(evidence, "coloc_eQTL")
-                    cnt <- cnt + 0.5
+                    cnt <- cnt + coloc_eQTL_tissues_interest_score/2
                 }
             }
         } else {
             if (locus[i, "coloc_eQTL"] == 1) {
                 evidence <- c(evidence, "coloc_eQTL")
-                cnt <- cnt + 1
+                cnt <- cnt + coloc_eQTL_tissues_interest_score
             }
             if (locus[i, "coloc_eQTL"] == 0) {
                 if (locus[i, "lead_eQTL"]==1 | locus[i, "proxy_eQTL"]==1) {
                     evidence <- c(evidence, "cis-eQTL")
-                    cnt <- cnt + 0.25
+                    cnt <- cnt + lead_eQTL_score
                 }
             }
         }
         if (locus[i, "coloc_pQTL"] == 1) {
             evidence <- c(evidence, "coloc_pQTL")
-            cnt <- cnt + 1
+            cnt <- cnt + coloc_pQTL_score
         }
 
         if (locus[i, "PoPS_top1"] == 1) {
             evidence <- c(evidence,
                 paste0("PoPS_top1_", round(locus[i, "PoPS_score"], 2)))
-            cnt <- cnt + 1
+            cnt <- cnt + PoPS_top1_score
         }
         if (locus[i, "PoPS_top2"] == 1) {
             evidence <- c(evidence,
                 paste0("PoPS_top2_", round(locus[i, "PoPS_score"], 2)))
-            cnt <- cnt + 1
+            cnt <- cnt + PoPS_top2_score
         }
         if (locus[i, "PoPS_top3"] == 1) {
             evidence <- c(evidence,
                 paste0("PoPS_top3_", round(locus[i, "PoPS_score"], 2)))
-            cnt <- cnt + 1
+            cnt <- cnt + PoPS_top3_score
         }
 
         gene.df <- data.frame(symbol=gene,
@@ -179,18 +245,27 @@ for (rsid in unique(m$LEAD_rsID)) {
         genes.df <- rbind(genes.df, gene.df)
     }
 
-    genes.df <- genes.df[order(genes.df$count, decreasing = TRUE), ]
+    
 
     custom_order <- c("nearest", "coloc_eQTL_tissues_interest" ,"coloc_eQTL", "coloc_pQTL", "LD_overlapping", "IMPACT_moderate_high", "PoPS_top1", "PoPS_top2", "PoPS_top3") 
-    evidence_type <- sub("^PoPS_top1_([-0-9.]+)$", "PoPS_top1", genes.df[genes.df$count == 1, ]$evidences)
-    evidence_type <- sub("^PoPS_top2_([-0-9.]+)$", "PoPS_top2", evidence_type)
-    evidence_type <- sub("^PoPS_top3_([-0-9.]+)$", "PoPS_top3", evidence_type)
-
+    #evidence_type <- sub("^PoPS_top1_([-0-9.]+)$", "PoPS_top1", genes.df[genes.df$count == 1, ]$evidences)
+    #evidence_type <- sub("^PoPS_top2_([-0-9.]+)$", "PoPS_top2", evidence_type)
+    #evidence_type <- sub("^PoPS_top3_([-0-9.]+)$", "PoPS_top3", evidence_type)
+    
+    # Group by count and reorder within each group
+    genes.df <- genes.df %>%
+      group_by(count) %>%
+      arrange(factor(evidences, levels = custom_order))
+    
+    genes.df <- genes.df[order(genes.df$count, decreasing = TRUE), ]
+    # Print the resulting dataframe
+    print(genes.df)
+    
     # Order based on evidence type
-    subset_order <- order(factor(evidence_type, levels = custom_order))
+    #subset_order <- order(factor(evidence_type, levels = custom_order))
 
-    genes.df[genes.df$count == 1, ] <- genes.df[genes.df$count == 1, ][subset_order, ]
-    print(genes.df[genes.df$count ==1,])
+    #genes.df[genes.df$count == 1, ] <- genes.df[genes.df$count == 1, ][subset_order, ]
+    #print(genes.df[genes.df$count ==1,])
     
     
     cat("genes and evidences \n")

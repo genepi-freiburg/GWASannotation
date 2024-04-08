@@ -28,13 +28,13 @@ echo "Generate MAGMA score"
 #use rsid or Chrpos input depending on bfile
 
 # Check if bfile contains rsIDs
-if grep -q "rs" "$bfile".bim; then
-    echo "using _rsid.txt"
-    input_file="${input_file}_rsid.txt"
-else
-    echo "using _CHRPOS.txt"
-    input_file="${input_file}_CHRPOS.txt"
-fi
+#if grep -q "rs" "$bfile".bim; then
+#    echo "using _rsid.txt"
+#    input_file="${input_file}_rsid.txt"
+#else
+#    echo "using _CHRPOS.txt"
+#    input_file="${input_file}_CHRPOS.txt"
+#fi
 
 out_magma="${output_path}_magma"
 magma_command="/data/programs/bin/gwas/magma/magma-1.09b/magma"

@@ -1,6 +1,7 @@
 #ensembl = useMart(biomart="ENSEMBL_MART_ENSEMBL",
 #                  dataset="hsapiens_gene_ensembl")
 
+
 input_path=output_path
 tophit.file=paste0(input_path, "_sentinel.txt")
 regions.file=paste0(input_path, "_coloc_regions.RDS")
@@ -42,51 +43,55 @@ process_dataset_eQTL <- function(coloc_path, dataset, regions.file, tophit.file)
     inc.cols2 <- c("_Tissue", "_gene_id", "_gene_type", "_gene_name", "_cis_trans")
     print(dataset)
     data <- merge_coloc_sentinel(coloc_path, dataset, regions.file, tophit.file)
-    data$trait=dataset
-    #data$rsID <- paste(data$chr, data$position, sep = ":")
-    data$Name <- paste(data$CHR_var, data$snpPOS, sep = ":")
-    print(all(inc.cols %in% names(data)))
-    print(all(paste0(dataset, inc.cols2) %in% names(data)))
-    cols <- c(inc.cols, paste0(dataset, inc.cols2))
-    data <- data[, cols]
-    print(dim(data))
-    names(data) <- sub(pattern=paste0(dataset, "_"), replacement="", x=names(data))
-    data$gene_id <- sub(pattern="\\.[0-9]*$", replacement="", x=data$gene_id)
-    data <- data[data$cis_trans =="cis", ]
-    data <- data[complete.cases(data$gene_id), ]
-    print(dim(data))
-    return(data)
+    if(nrow(data>0)){
+        data$trait=dataset
+        #data$rsID <- paste(data$chr, data$position, sep = ":")
+        data$Name <- paste(data$CHR_var, data$snpPOS, sep = ":")
+        print(all(inc.cols %in% names(data)))
+        print(all(paste0(dataset, inc.cols2) %in% names(data)))
+        cols <- c(inc.cols, paste0(dataset, inc.cols2))
+        data <- data[, cols]
+        print(dim(data))
+        names(data) <- sub(pattern=paste0(dataset, "_"), replacement="", x=names(data))
+        data$gene_id <- sub(pattern="\\.[0-9]*$", replacement="", x=data$gene_id)
+        data <- data[data$cis_trans =="cis", ]
+        data <- data[complete.cases(data$gene_id), ]
+        print(dim(data))
+        return(data)
+    }
 }
 
 process_dataset_pQTL <- function(coloc_path, dataset, regions.file, tophit.file) {
     inc.cols <- c("rsID", "trait", "Name", "sumstats_2_max_nlog10P", "PP.H4.abf")
     inc.cols2 <- c("_cis_trans")
     data <- merge_coloc_sentinel(coloc_path, dataset, regions.file, tophit.file)
-    data$trait=dataset
-    data$Name <- paste(data$CHR_var, data$snpPOS, sep = ":")
-    print(all(inc.cols %in% names(data)))
-    if (dataset == "ARIC_pGWAS") {
-        #gene_info <- getBM(attributes = c("ensembl_gene_id", "hgnc_symbol"),
-        #                   filters = "hgnc_symbol",
-        #                   values = unique(data$ARIC_pGWAS_entrezgenesymbol), mart = ensembl)
-        gene_info <- ensembl_genes.df[unique(data$ARIC_pGWAS_entrezgenesymbol), c("gene_id", "hgnc_symbol")]
-        print(gene_info)
-        data <- merge(data, gene_info, by.x="ARIC_pGWAS_entrezgenesymbol",
-                      by.y="hgnc_symbol")
-        names(data)[names(data) == "ensembl_gene_id"] <- "gene_id"
-    } else if (dataset == "Icelanders_pGWAS") {
-        names(data)[names(data) == "Icelanders_pGWAS_Ensembl.Gene.ID"] <- "gene_id"
-    } else if (dataset == "UKB_PPP_EUR") {
-        names(data)[names(data) == "UKB_PPP_EUR_ensembl_id"] <- "gene_id"
-    }
+    if(nrow(data>0)){
+        data$trait=dataset
+        data$Name <- paste(data$CHR_var, data$snpPOS, sep = ":")
+        print(all(inc.cols %in% names(data)))
+        if (dataset == "ARIC_pGWAS") {
+            #gene_info <- getBM(attributes = c("ensembl_gene_id", "hgnc_symbol"),
+            #                   filters = "hgnc_symbol",
+            #                   values = unique(data$ARIC_pGWAS_entrezgenesymbol), mart = ensembl)
+            gene_info <- ensembl_genes.df[unique(data$ARIC_pGWAS_entrezgenesymbol), c("gene_id", "hgnc_symbol")]
+            print(gene_info)
+            data <- merge(data, gene_info, by.x="ARIC_pGWAS_entrezgenesymbol",
+                          by.y="hgnc_symbol")
+            names(data)[names(data) == "ensembl_gene_id"] <- "gene_id"
+        } else if (dataset == "Icelanders_pGWAS") {
+            names(data)[names(data) == "Icelanders_pGWAS_Ensembl.Gene.ID"] <- "gene_id"
+        } else if (dataset == "UKB_PPP_EUR") {
+            names(data)[names(data) == "UKB_PPP_EUR_ensembl_id"] <- "gene_id"
+        }
 
-    cols <- c(inc.cols, "gene_id", paste0(dataset, inc.cols2))
-    data <- data[, cols]
-    names(data) <- sub(pattern=paste0(dataset, "_"), replacement="", x=names(data))
-    data <- data[data$cis_trans =="cis", ]
-    data <- data[complete.cases(data$gene_id), ]
-    print(dim(data))
-    return(data)
+        cols <- c(inc.cols, "gene_id", paste0(dataset, inc.cols2))
+        data <- data[, cols]
+        names(data) <- sub(pattern=paste0(dataset, "_"), replacement="", x=names(data))
+        data <- data[data$cis_trans =="cis", ]
+        data <- data[complete.cases(data$gene_id), ]
+        print(dim(data))
+        return(data)
+    }
 }
 
 # eQTL
