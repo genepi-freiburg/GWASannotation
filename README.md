@@ -1,4 +1,3 @@
-### 31Jan2024
 ## GOAL: create an annotation pipeline for GWAS loci, by editing/ upgrading the ProGeM pipline.
 - botom up: add coloc with eQTL and pQTLs
 - top dow: add PoPS 
@@ -9,7 +8,7 @@
 | --- | --- |
 | --GWAS_RDS | GWAS summary stats .RSD [required] |
 | --output_path | Output folder path [required] |
-| --bfile | Bfile to use for MAGMA (if not provided UKB_14K_hg38 will be used) |
+| --bfile | bfile to use for selecting proxies and for MAGMA (if not provided UKB_14K_hg38 will be used) |
 | --magma_annotated_genes | Magma_annotated_genes to use for MAGMA (if not provided it will be created)
 | --eQTL_datasets_coloc | Comma-separated eQTL datasets to use for coloc (default=GTEXv8)
 | --eQTL_tissues_interest_coloc | Comma-separated tissues of interest to be selected from the eQTL datasets -check 04_utils/tissues_eQTL.txt
@@ -39,6 +38,24 @@
 | AF | frequency of A1 |
 | N | sample size |
 
-* script 00_process_sumstats.R can be used to create an input file from a gz and tabix regenie output
+* scripts 04_utils/00_process_sumstats_REGENIE.R and 04_utils/00_process_sumstats_metal.R can be used to create an input file from a gz and tabix regenie output
 * analysis will be conducted in hg38!!! 
 
+**--Post processing - scoring system:**  
+*script 00_scripts/08_postprocessing_ProGeM.R can be used with the following options in case an alternative scoring is desired  
+
+| Column | Description |
+| --- | --- |
+| --output_path | output_path for GWASAnno full path [required] |
+| --output_file_name |  output file name [default='GWASAnno_summary.txt]' |
+| --eQTL_tissues_interest_coloc | Comma-separated tissues of interest previously selected from the eQTL datasets |
+| --nearest | nearest score [default=1] |
+| --second_nearest | second_nearest score [default=0.5] |
+| --third_nearest | third_nearest score [default=0.25] |
+| --LD_overlapping | LD_overlapping score [default=1] |
+| --coloc_eQTL_tissues_interest | coloc_eQTL_tissues_interest score (if eQTL_tissues_interest_coloc are not provided, coloc_eQTL will take coloc_eQTL_tissues_interest score [default=1]|
+| --lead_eQTL | lead_eQTL or proxie_eQTL score [default=0.25 (if no coloc eQTL is found)]|
+| --coloc_pQTL | coloc_pQTL score [default=1] |
+| --PoPS_top1 | PoPS_top1 score [default=1] |
+| --PoPS_top2 | PoPS_top2 score [default=0.5] |
+| --PoPS_top3 | PoPS_top3 score [default=0.25] |
