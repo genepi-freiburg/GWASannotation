@@ -4,7 +4,7 @@ library(dplyr)
 library(readxl)
 
 option_list <- list(
-  make_option("--output_path2", action="store", default=NA, type='character', help="output_path for GWASAnno full path [required]"),
+  make_option("--output_path", action="store", default=NA, type='character', help="output_path for GWASAnno full path [required]"),
   make_option("--output_file_name", action="store", default="GWASAnno_summary.txt", type='character', help="output file name [default='GWASAnno_summary.txt]'"),
   make_option("--tissues_interest", action="store", default=NA, type='character', help="tissues_interest [default=NA]"),
   make_option("--nearest", action="store", default="1", type='numeric', help="nearest_score [default=1]"),
