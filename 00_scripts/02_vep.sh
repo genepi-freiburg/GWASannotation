@@ -4,7 +4,6 @@
 input_file="$1" #input file for VEP
 output=${input_file/_vep/_vepout}
 
-# Generate MAGMA scores
 echo "Run VEP"
 /data/programs/bin/ngs/VEP/101/vep \
 --input_file $input_file --format ensembl --no_check_variants_order \
