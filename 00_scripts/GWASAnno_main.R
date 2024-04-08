@@ -192,7 +192,7 @@ cat("##################################################\n######## STEP1: Perform
 start_time1 <- Sys.time()
 output_path = opt$output_path
 GWAS_RDS = opt$GWAS_RDS
-#source("/data/programs/pipelines/GWASannotation/00_scripts/01_preprocessing.R")
+source("/data/programs/pipelines/GWASannotation/00_scripts/01_preprocessing.R")
 end_time1 <- Sys.time()
 
 execution_time_seconds <- as.numeric(difftime(end_time1, start_time1, units = "secs"))
@@ -212,7 +212,7 @@ if (file.exists(paste0(output_path,"_subset.txt.gz")) &
   cat("##################################################\n################# STEP2: run VEP ################# \n################################################## \n")
   input_vep=paste0(output_path,"_proxies_vep.txt")
   start_time2 <- Sys.time()
-  #system(paste0("/data/programs/pipelines/GWASannotation/00_scripts/02_vep.sh ",input_vep))
+  system(paste0("/data/programs/pipelines/GWASannotation/00_scripts/02_vep.sh ",input_vep))
   end_time2 <- Sys.time()
 
   execution_time_seconds <- as.numeric(difftime(end_time2, start_time2, units = "secs"))
@@ -230,9 +230,9 @@ if (is.na(opt$coloc_input_path)){
     cat("##################################################\n########### STEP3: run MAGMA and PoPS ############\n########### AND ############\n\n########### ###### STEP5: Performing eQTL and pQTL colocalization ######\n################################################## \n")
     input_magma=paste0(output_path,"_input_magma.txt")
     start_time3 <- Sys.time()
-    #system(paste0("/data/programs/pipelines/GWASannotation/00_scripts/03_magma_and_pops.sh ", input_magma, " ", output_path, " ", bfile, " ", magma_annotated_genes, " > ", output_path, "_STEP3_log.txt  2>&1"), wait = FALSE)
+    system(paste0("/data/programs/pipelines/GWASannotation/00_scripts/03_magma_and_pops.sh ", input_magma, " ", output_path, " ", bfile, " ", magma_annotated_genes, " > ", output_path, "_STEP3_log.txt  2>&1"), wait = FALSE)
 
-    #source("/data/programs/pipelines/GWASannotation/00_scripts/05_coloc.R")
+    source("/data/programs/pipelines/GWASannotation/00_scripts/05_coloc.R")
     
     # Wait for the process started by 03_magma_and_pops.sh to finish
     while(TRUE) {
@@ -271,7 +271,7 @@ if (file.exists(paste0(output_path,".preds"))) {
   cat("##################################################\n############ STEP4: Pops_make_GRanges ############ \n################################################## \n")
   PoPS_results = paste0(output_path, ".preds")
   start_time4 <- Sys.time()
-  #source("/data/programs/pipelines/GWASannotation/00_scripts/04_Pops_make_GRanges.R")
+  source("/data/programs/pipelines/GWASannotation/00_scripts/04_Pops_make_GRanges.R")
   end_time4 <- Sys.time()
   execution_time_seconds <- as.numeric(difftime(end_time4, start_time4, units = "secs"))
   execution_time_minutes <- execution_time_seconds / 60
@@ -286,7 +286,7 @@ if (file.exists(paste0(output_path,".preds"))) {
 if (file.exists(paste0(coloc_path,"/",datasets_coloc[1], ".RDS"))) {
     cat("########################################################\n###### STEP6: Prepare coloc QTL results for ProGEM ###### \n######################################################## \n")
     start_time6 <- Sys.time()
-    #source("/data/programs/pipelines/GWASannotation/00_scripts/06_prepare_QTL.R")
+    source("/data/programs/pipelines/GWASannotation/00_scripts/06_prepare_QTL.R")
     cat("Step6 done\n\n")
     end_time6 <- Sys.time()
     execution_time_seconds <- as.numeric(difftime(end_time6, start_time6, units = "secs"))
@@ -319,7 +319,7 @@ file.exists(paste0(coloc_path,"input_Progem_pQTL.txt"))) {
 
     cat("##################################################\n############### STEP7: Run ProGEM ################ \n################################################## \n")
     start_time7 <- Sys.time()
-    #source("/data/programs/pipelines/GWASannotation/00_scripts/07_run_ProGeM.R")
+    source("/data/programs/pipelines/GWASannotation/00_scripts/07_run_ProGeM.R")
     end_time7 <- Sys.time()
     execution_time_seconds <- as.numeric(difftime(end_time7, start_time7, units = "secs"))
     execution_time_minutes <- execution_time_seconds / 60
@@ -334,7 +334,6 @@ if (file.exists(paste0(output_dir,"OUTPUT_bottom_up_summary.txt")) &
 file.exists(paste0(output_dir,"OUTPUT_top_down_scores.txt"))) {
   cat("##################################################\n###### STEP8: Pos-processing ProGEM results (include scoring) ###### \n################################################## \n")
   start_time8 <- Sys.time()
-  #detach("package:optparse", unload=TRUE)
   rm(opt)
   
   source("/data/programs/pipelines/GWASannotation/00_scripts/08_postprocessing_ProGeM.R")
