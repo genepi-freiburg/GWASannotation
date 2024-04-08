@@ -6,7 +6,7 @@ library(readxl)
 option_list <- list(
   make_option("--output_path", action="store", default=NA, type='character', help="output_path for GWASAnno full path [required]"),
   make_option("--output_file_name", action="store", default="GWASAnno_summary.txt", type='character', help="output file name [default='GWASAnno_summary.txt]'"),
-  make_option("--tissues_interest", action="store", default=NA, type='character', help="tissues_interest [default=NA]"),
+  make_option("--eQTL_tissues_interest_coloc", action="store", default=NA, type='character', help="Comma-separated tissues of interest previously selected from the eQTL datasets [default=NA]"),
   make_option("--nearest", action="store", default="1", type='numeric', help="nearest_score [default=1]"),
   make_option("--second_nearest", action="store", default="0.5", type='numeric', help="second_nearest [default=0.5]"),
   make_option("--third_nearest", action="store", default="0.25", type='numeric', help="second_nearest [default=0.25]"),
@@ -28,7 +28,7 @@ tryCatch({
   output_path <- opt$output_path
   folder_path <- dirname(opt$output_path)
   output_dir <- paste0(folder_path, "/GWASAnno/")
-  tissues_interest <- paste0(opt$tissues_interest,"_sentinel.txt")
+  tissues_interest <- opt$eQTL_tissues_interest_coloc
   
   # Reading and processing for bottom_up, top_down, and pops with optparse
   bottom_up.file <- paste0(output_dir, "OUTPUT_bottom_up_summary.txt")
