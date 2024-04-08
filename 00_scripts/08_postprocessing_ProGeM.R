@@ -7,17 +7,17 @@ option_list <- list(
   make_option("--output_path", action="store", default=NA, type='character', help="output_path for GWASAnno full path [required]"),
   make_option("--output_file_name", action="store", default="GWASAnno_summary.txt", type='character', help="output file name [default='GWASAnno_summary.txt]'"),
   make_option("--eQTL_tissues_interest_coloc", action="store", default=NA, type='character', help="Comma-separated tissues of interest previously selected from the eQTL datasets [default=NA]"),
-  make_option("--nearest", action="store", default="1", type='numeric', help="nearest_score [default=1]"),
-  make_option("--second_nearest", action="store", default="0.5", type='numeric', help="second_nearest [default=0.5]"),
-  make_option("--third_nearest", action="store", default="0.25", type='numeric', help="second_nearest [default=0.25]"),
-  make_option("--LD_overlapping", action="store", default="1", type='numeric', help="LD_overlapping [default=1"),
-  make_option("--lead_IMPACT", action="store", default="1", type='numeric', help="lead_IMPACT [default=1]"),
-  make_option("--coloc_eQTL_tissues_interest", action="store", default="1", type='numeric', help="coloc_eQTL_tissues_interest [default=1]"),
-  make_option("--lead_eQTL", action="store", default="0.25", type='numeric', help="lead_eQTL or proxie_eQTL [default=0.25]"),
-  make_option("--coloc_pQTL", action="store", default="1", type='numeric', help="coloc_pQTL [default=1]"),
-  make_option("--PoPS_top1", action="store", default="1", type='numeric', help="PoPS_top1 [default=1]"),
-  make_option("--PoPS_top2", action="store", default="0.5", type='numeric', help="PoPS_top2 [default=0.5]"),
-  make_option("--PoPS_top3", action="store", default="0.25", type='numeric', help="PoPS_top3 [default=0.5]")
+  make_option("--nearest", action="store", default="1", type='numeric', help="nearest score [default=1]"),
+  make_option("--second_nearest", action="store", default="0.5", type='numeric', help="second_nearest score [default=0.5]"),
+  make_option("--third_nearest", action="store", default="0.25", type='numeric', help="third_nearest score [default=0.25]"),
+  make_option("--LD_overlapping", action="store", default="1", type='numeric', help="LD_overlapping score [default=1"),
+  make_option("--lead_IMPACT", action="store", default="1", type='numeric', help="lead_IMPACT score [default=1]"),
+  make_option("--coloc_eQTL_tissues_interest", action="store", default="1", type='numeric', help="coloc_eQTL_tissues_interest score [default=1]"),
+  make_option("--lead_eQTL", action="store", default="0.25", type='numeric', help="lead_eQTL or proxie_eQTL score [default=0.25]"),
+  make_option("--coloc_pQTL", action="store", default="1", type='numeric', help="coloc_pQTL score [default=1]"),
+  make_option("--PoPS_top1", action="store", default="1", type='numeric', help="PoPS_top1 score [default=1]"),
+  make_option("--PoPS_top2", action="store", default="0.5", type='numeric', help="PoPS_top2 score [default=0.5]"),
+  make_option("--PoPS_top3", action="store", default="0.25", type='numeric', help="PoPS_top3 score [default=0.5]")
 )
 
 
