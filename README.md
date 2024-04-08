@@ -53,6 +53,7 @@
 | --second_nearest | second_nearest score [default=0.5] |
 | --third_nearest | third_nearest score [default=0.25] |
 | --LD_overlapping | LD_overlapping score [default=1] |
+| --lead_IMPACT | VEP lead IMPACT score [default=1] |
 | --coloc_eQTL_tissues_interest | coloc_eQTL_tissues_interest score (if eQTL_tissues_interest_coloc are not provided, coloc_eQTL will take coloc_eQTL_tissues_interest score [default=1]|
 | --lead_eQTL | lead_eQTL or proxie_eQTL score [default=0.25 (if no coloc eQTL is found)]|
 | --coloc_pQTL | coloc_pQTL score [default=1] |
