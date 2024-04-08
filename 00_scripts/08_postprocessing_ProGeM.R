@@ -23,7 +23,6 @@ option_list <- list(
 
 opt_used <- FALSE
 tryCatch({
-  print("using optparse")
   opt <- parse_args(OptionParser(option_list=option_list))
   output_path <- opt$output_path
   folder_path <- dirname(opt$output_path)
@@ -50,12 +49,11 @@ tryCatch({
   PoPS_top3_score <- opt$PoPS_top3
   opt_used <- TRUE
 }, error = function(e) {
-  cat("Using alternative method for argument parsing.\n")
+  cat("")
 }, finally = {
     if (!opt_used) {
         # Reading and processing for bottom_up, top_down, and pops
         bottom_up.file <- paste0(output_dir, "OUTPUT_bottom_up_summary.txt")
-        print(bottom_up.file)
         top_down.file <- paste0(output_dir, "OUTPUT_top_down_scores.txt")
         pops.file <- filename_PoPS
         tophit.file <- sentinel_filename

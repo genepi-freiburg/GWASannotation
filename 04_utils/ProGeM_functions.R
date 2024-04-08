@@ -229,7 +229,7 @@ top_down_scorer <- function(sentinels, metabolic_overlapping_genes) {
     for(x in 1:length(temp)) {
       temp[[x]] <- as.data.frame(mcols(metabolic_overlapping_genes[[x]][which(mcols(metabolic_overlapping_genes[[x]])$lead_variant == lead)]))
       # genes <- unique(rbind(genes, temp[[x]][,c(1:5)]))
-      genes <- unique(rbind(genes, temp[[x]][,c(1:6)]))
+      genes <- unique(rbind(genes, temp[[x]][,c(1:5)]))
       # genes <- unique(rbind(genes, temp[[x]][,c(1:1)]))
     }
     if(length(genes[,1]) > 0) {
@@ -239,7 +239,7 @@ top_down_scorer <- function(sentinels, metabolic_overlapping_genes) {
       #      "score")))
       top_down_tally <- matrix(data = 0,
                                nrow = length(genes[,1]), ncol = 2, dimnames = list(NULL, c("PoPS", "PoPS_score")))
-
+      
       for(y in 1:length(genes[,1])) {
         for(z in 1:length(temp)) {
           if(genes[y, 3] %in% temp[[z]][,3]) {
@@ -247,10 +247,10 @@ top_down_scorer <- function(sentinels, metabolic_overlapping_genes) {
           }
         }
         # top_down_tally[y, 2] <- sum(top_down_tally[y,])
-        top_down_tally[y, 2] <- genes[y, 6]
+        top_down_tally[y, 2] <- genes[y, 4]
       }
       LEAD_rsID <- rep(lead, length(genes[,1]))
-      top_down_scores <- rbind(top_down_scores, cbind(LEAD_rsID, genes[,c(3:5)], top_down_tally))
+      top_down_scores <- rbind(top_down_scores, cbind(LEAD_rsID, genes[,c(1:3)], top_down_tally))
     }
   }
   colnames(top_down_scores)[c(2, 3)] <- c("ensembl_id", "hgnc_symbol")
