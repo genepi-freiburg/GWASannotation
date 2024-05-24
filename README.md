@@ -15,8 +15,8 @@
 | --pQTL_datasets_coloc | Comma-separated pQTL datasets to use for coloc (default=c('Icelanders_pGWAS','UKB_PPP_EUR')
 | --coloc_input_path | Path with coloc results for the selected databases (default=NA and runs coloc analysis)
 | --r2_thresh | Threshold for r2 values (default=0.8)
-| --interval_kb | Genomic interval (in kb) either side of the sentinel SNP (default=500)
-| --LD_region_overhang_kb | Genomic interval (in kb) of the overhang of the left-most and right-most proxy/sentinel variant at each locus (default=5)
+| --interval_kb | Genomic interval (in kb) either side of the sentinel SNP (default=500), used to define genes that nearby the index SNP 
+| --LD_region_overhang_kb | Genomic interval (in kb) of the overhang of the left-most and right-most proxy/index SNP at each locus (default=5), used to identify genes with variants in LD with index or proxy SNPs
 | --sumstats_2_max_nlog10P_thresh | Sumstats_2_max_nlog10P will be filtered for > this threshold (default=-log10(5e-8))
 | --PP.H4.abf_thresh | PP.H4.abf will be filtered for > this threshold (default=0.8)
 
@@ -30,8 +30,8 @@
 | rsID |  Reference SNP cluster ID (example *rs367896724*) |
 | CHR | chromosome number (example: *1*) |
 | POS | SNP position (example: *10177*) |
-| A1 | effect allele (example: *AC*) |
-| A2 | other allele (example: *A*) |
+| A1 | alternative/ effect allele (example: *AC*) |
+| A2 | reference/ other allele (example: *A*) |
 | BETA | beta |
 | SE | se|
 | nlog10P | -log10(P) |
@@ -50,13 +50,14 @@
 | --output_file_name |  output file name [default='GWASAnno_summary.txt]' |
 | --eQTL_tissues_interest_coloc | Comma-separated tissues of interest previously selected from the eQTL datasets |
 | --nearest | nearest score [default=1] |
-| --second_nearest | second_nearest score [default=0.5] |
-| --third_nearest | third_nearest score [default=0.25] |
+| --second_nearest | second_nearest score [default=0.99] |
+| --third_nearest | third_nearest score [default=0.98] |
 | --LD_overlapping | LD_overlapping score [default=1] |
-| --lead_IMPACT | VEP lead IMPACT score [default=1] |
-| --coloc_eQTL_tissues_interest | coloc_eQTL_tissues_interest score (if eQTL_tissues_interest_coloc are not provided, coloc_eQTL will take coloc_eQTL_tissues_interest score [default=1]|
-| --lead_eQTL | lead_eQTL or proxie_eQTL score [default=0.25 (if no coloc eQTL is found)]|
-| --coloc_pQTL | coloc_pQTL score [default=1] |
-| --PoPS_top1 | PoPS_top1 score [default=1] |
-| --PoPS_top2 | PoPS_top2 score [default=0.5] |
-| --PoPS_top3 | PoPS_top3 score [default=0.25] |
+| --lead_IMPACT | VEP lead IMPACT score [default=1.02] |
+| --coloc_eQTL_tissues_interest | coloc_eQTL_tissues_interest score (if --eQTL_tissues_interest_coloc are not defined, --coloc_eQTL_tissues_interest is not used) [default=1.04]|
+| --coloc_eQTL | coloc_eQTL score (if --eQTL_tissues_interest_coloc is defined, this score is only applied if NO coloc_eQTL_tissues_interest is identified) [default=1.03]|
+| --lead_eQTL | lead_eQTL or proxie_eQTL score (this score is only applied if NO coloc_eQTL is identified) [default=0.75]|
+| --coloc_pQTL | coloc_pQTL score [default=1.04] |
+| --PoPS_top1 | PoPS_top1 score [default=0] |
+| --PoPS_top2 | PoPS_top2 score [default=0] |
+| --PoPS_top3 | PoPS_top3 score [default=0] |

@@ -20,7 +20,7 @@ sbatch -p imbiPCompute --nodelist="imbip-compute-214" --output /data/programs/pi
 
 
 #TEST Uromodulin
-output_path="/data/programs/pipelines/GWASannotation/02_output/Uromodulin"
+output_path="/data/programs/pipelines/GWASannotation/02_output/Uromodulin/"
 mkdir $output_path
 input_file="/data/meta_analyses/19_UMOD_2023/meta_UKB50k_Regenie/GWASannotation_run/01_input/Uromodulin_liftOver_hg38.RDS"
 sbatch -p imbiPCompute --nodelist="imbip-compute-214" --output /data/programs/pipelines/GWASannotation/03_logs/GWASAnno_main_Uromodulin_$(date +'%Y%m%d')_raw.txt --job-name=Anno_raw --begin=now --mail-type=END --mail-user=sara.monteiro.martins@uniklinik-freiburg.de --wrap="Rscript /data/programs/pipelines/GWASannotation/00_scripts/GWASAnno_main.R \
@@ -40,6 +40,15 @@ sbatch -p imbiPCompute --nodelist="imbip-compute-214" --output /data/programs/pi
     --eQTL_tissues_interest_coloc "Kidney_Cortex,Spleen,Whole_Blood,Kidney_eQTL.TubsigeQTLs,Kidney_eQTL.GlomsigeQTLs" \
     --output_path $output_path "
 
+output_path="/data/programs/pipelines/GWASannotation/02_output/Uromodulin/Uromodulin"
+file_out="GWAS_anno_scoring_Uromodulin_test.txt"
+sbatch --output /data/programs/pipelines/GWASannotation/03_logs/08_postprocessing_Uromodulin_$(date +'%Y%m%d').txt --job-name=score --begin=now --mail-type=END --mail-user=sara.monteiro.martins@uniklinik-freiburg.de --wrap="Rscript /data/programs/pipelines/GWASannotation/00_scripts/08_postprocessing_ProGeM.R \
+    --output_path $output_path \
+    --eQTL_tissues_interest_coloc "Kidney_Cortex,Spleen,Whole_Blood,Kidney_eQTL.TubsigeQTLs,Kidney_eQTL.GlomsigeQTLs" \
+    --nearest 1 \
+    --second_nearest  0.8  \
+    --third_nearest 0.6 \
+    --output_file_name $file_out "
 
 #TEST Olink
 # 3 proteins to test
@@ -66,7 +75,7 @@ sbatch -p imbiPCompute --nodelist="imbip-compute-214" --output /data/programs/pi
     --output_path $output_path "
 
  #run with coloc finished
- output_path="/data/programs/pipelines/GWASannotation/02_output/HDGF_OID21455/HDGF_OID21455"
+output_path="/data/programs/pipelines/GWASannotation/02_output/HDGF_OID21455/HDGF_OID21455"
 input_file="/data/programs/pipelines/GWASannotation/02_output/HDGF_OID21455/HDGF_OID21455_hg38_dedup.RDS"
 sbatch -p imbiPCompute --nodelist="imbip-compute-214" --output /data/programs/pipelines/GWASannotation/03_logs/GWASAnno_main_HDGF_$(date +'%Y%m%d')_with_coloc.txt --job-name=HDGF --begin=now --mail-type=END --mail-user=sara.monteiro.martins@uniklinik-freiburg.de --wrap="Rscript /data/programs/pipelines/GWASannotation/00_scripts/GWASAnno_main_test.R \
     --GWAS_RDS $input_file \
@@ -133,3 +142,8 @@ sbatch -p imbiPCompute --nodelist="imbip-compute-214" --output /data/programs/pi
     --eQTL_datasets_coloc "GTEXv8,eQTLGen" \
     --eQTL_tissues_interest_coloc "Whole_Blood" \
     --output_path $output_path "
+
+#check RAP
+sbatch --output /data/programs/pipelines/GWASannotation/03_logs/07_regplot_locuszoom_HDGF_$(date +'%Y%m%d').txt --job-name=locuszoom --begin=now --mail-type=END --mail-user=sara.monteiro.martins@uniklinik-freiburg.de --wrap="Rscript /data/studies/06_UKBB/02_Projects/14_MRI-kidney/00_scripts/07_regplot_locuszoom_test_GWASAnno_pgwas.R "
+
+

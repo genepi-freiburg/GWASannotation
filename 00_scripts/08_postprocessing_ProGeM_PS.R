@@ -12,7 +12,7 @@ option_list <- list(
   make_option("--third_nearest", action="store", default="0.25", type='numeric', help="third_nearest score [default=0.25]"),
   make_option("--LD_overlapping", action="store", default="1", type='numeric', help="LD_overlapping score [default=1"),
   make_option("--lead_IMPACT", action="store", default="1", type='numeric', help="lead_IMPACT score [default=1]"),
-  make_option("--coloc_eQTL_tissues_interest", action="store", default="1", type='numeric', help="coloc_eQTL_tissues_interest score (if --eQTL_tissues_interest_coloc are not defined, coloc_eQTL takes the score value of --coloc_eQTL_tissues_interest ) [default=1]"),
+  make_option("--coloc_eQTL_tissues_interest", action="store", default="1", type='numeric', help="coloc_eQTL_tissues_interest score [default=1]"),
   make_option("--lead_eQTL", action="store", default="0.25", type='numeric', help="lead_eQTL or proxie_eQTL score [default=0.25]"),
   make_option("--coloc_pQTL", action="store", default="1", type='numeric', help="coloc_pQTL score [default=1]"),
   make_option("--PoPS_top1", action="store", default="1", type='numeric', help="PoPS_top1 score [default=1]"),
@@ -48,6 +48,7 @@ tryCatch({
   PoPS_top1_score <- opt$PoPS_top1
   PoPS_top2_score <- opt$PoPS_top2
   PoPS_top3_score <- opt$PoPS_top3
+print(output_dir)
   opt_used <- TRUE
 }, error = function(e) {
   cat("")
@@ -204,22 +205,18 @@ for (rsid in unique(m$LEAD_rsID)) {
                 if (locus[i, "coloc_eQTL"] == 1) {
                     evidence <- c(evidence, "coloc_eQTL")
                     cnt <- cnt + coloc_eQTL_tissues_interest_score/2
-                } else {
-                  if (locus[i, "lead_eQTL"]==1 | locus[i, "proxy_eQTL"]==1) {
-                    evidence <- c(evidence, "cis-eQTL")
-                    cnt <- cnt + lead_eQTL_score
-                  }
                 }
             }
         } else {
             if (locus[i, "coloc_eQTL"] == 1) {
                 evidence <- c(evidence, "coloc_eQTL")
                 cnt <- cnt + coloc_eQTL_tissues_interest_score
-            }else {
-              if (locus[i, "lead_eQTL"]==1 | locus[i, "proxy_eQTL"]==1) {
-                evidence <- c(evidence, "cis-eQTL")
-                cnt <- cnt + lead_eQTL_score
-              }
+            }
+            if (locus[i, "coloc_eQTL"] == 0) {
+                if (locus[i, "lead_eQTL"]==1 | locus[i, "proxy_eQTL"]==1) {
+                    evidence <- c(evidence, "cis-eQTL")
+                    cnt <- cnt + lead_eQTL_score
+                }
             }
         }
         if (locus[i, "coloc_pQTL"] == 1) {

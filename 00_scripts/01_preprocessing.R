@@ -35,9 +35,10 @@ head(sumstats_filt)
 # Save
 writeLines(regions_log, con = paste0(output_path, "_get_coloc_regions_log.txt"))
 saveRDS(sumstats_filt, paste0(output_path, "_subset.RDS")) #not needed?
-write.table(sumstats_filt, file = paste0(output_path, "_subset.txt"), sep = "\t", row.names = FALSE, quote = FALSE)
-system(paste0("bgzip ", output_path, "_subset.txt"))
-system(paste0("tabix -b 4 -e 4 -S 1 -s 3 ", output_path, "_subset.txt.gz"))
+#write.table(sumstats_filt, file = paste0(output_path, "_subset.txt"), sep = "\t", row.names = FALSE, quote = FALSE)
+#system(paste0("bgzip ", output_path, "_subset.txt"))
+#system(paste0("tabix -b 4 -e 4 -S 1 -s 3 ", output_path, "_subset.txt.gz"))
+save_coloc_regions(regions_list, output_path)
 saveRDS(regions_list, paste0(output_path, "_coloc_regions.RDS"))
 
 #####################################
@@ -49,7 +50,7 @@ tophit=regions
 tophit$strand <- "+"
 #tophit$rsID <- paste(tophit$CHROM, tophit$POS, sep = ":")
 
-tophit$allele <- paste(tophit$A1, tophit$A2, sep = "/")
+#tophit$allele <- paste(tophit$A1, tophit$A2, sep = "/")
 
 # If theres no rsID, create "chr:start" annotation
 tophit<- tophit %>%
@@ -87,16 +88,16 @@ cat("\n## Creating proxie file ## \n")
 #SnIPA uses hg37 - using plink for hg38
 #plink2 doesnt support --ld-snp-list, need to use plink1
 #if no bfile provided, will use /data/studies/06_UKBB/01_Data/02_Genetic_Data/UKBB_150k_RandomSubset_Cleaned/hg38/UKBB_14k_hg38_chr1-22
-system(paste0("/data/programs/bin/gwas/plink/plink-1.90_beta6.20/plink --bfile ", bfile, " --r2 --ld-snp-list ", output_path, "_sentinel.txt --out ", output_path, "_ld_results"))
+system(paste0("/data/programs/bin/gwas/plink/plink-1.90_beta6.20/plink --bfile ", bfile, " --r2 with-freqs --ld-snp-list ", output_path, "_sentinel.txt --ld-window 1000000 --ld-window-kb 1000 --out ", output_path, "_ld_results"))
 ld=read.table(paste0(output_path, "_ld_results.ld"),header=T)
 
-r2.cutoff <- 0.8 #*** ADD parameter with cutoff
+r2.cutoff <- r2_thresh 
 
 ld_results=ld[which(ld$R2>r2.cutoff),]
 #sumstats_filt=readRDS(paste0(output_path, "_subset.RDS"))
 sumstats_filt=as.data.frame(sumstats_filt)
 ld_results=merge(ld_results, sumstats_filt[,c("rsID", "A1","A2")], by.x="SNP_B", by.y="rsID")
-ld_results$END =as.numeric(ld_results$BP_B) + nchar(as.character(ld_results$A2)) - 1
+ld_results$END =as.numeric(ld_results$BP_B) +  nchar(as.character(ld_results$A1)) - 1
 proxy_data <- data.frame(
   PROXY_rsID = ld_results$SNP_B,
   PROXY_CHR = ld_results$CHR_B,
@@ -105,20 +106,19 @@ proxy_data <- data.frame(
   LEAD_rsID = ld_results$SNP_A,
   r2 = ld_results$R2
 )
-#  PROXY_END = as.numeric(ld_results$PROXY_START) + nchar(as.character(ld_results$A2)) - 1,
 print("Dimension proxies data:")
-dim(proxy_data)
+print(dim(proxy_data))
 
 
 cat("head proxie file \n")
-head(proxy_data)
+print(head(proxy_data))
 write.table(proxy_data, file= paste0(output_path, "_proxies.txt"), quote = FALSE, sep = "\t",
     row.names = FALSE, col.names = TRUE)
 
 
 
 ld_results$strand <- "+"
-ld_results$allele <- paste(ld_results$A1, ld_results$A2, sep = "/")
+ld_results$allele <- paste(ld_results$A2, ld_results$A1, sep = "/") #A2 is reference
 vep_data <- ld_results[,c("CHR_B", "BP_B", "END", "allele",
 "strand", "SNP_B")]
 cat("head vep input file \n")

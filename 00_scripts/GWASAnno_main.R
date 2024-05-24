@@ -10,8 +10,8 @@ library(writexl)
 library(dplyr)
 library(biomaRt)
 
-#devtools::load_all("/data/programs/pipelines/genepicoloc/genepicoloc_package")
-#sapply(list.files("/data/programs/pipelines/genepicoloc/custom_scripts/source", full.names = T), source)
+devtools::load_all("/data/programs/pipelines/genepicoloc/genepicoloc_package")
+sapply(list.files("/data/programs/pipelines/genepicoloc/custom_scripts/source", full.names = T), source)
 
 suppressMessages(library(optparse))
 cat("\nImported required packages.\n")
@@ -19,7 +19,9 @@ cat("\nImported required packages.\n")
 source(file = file.path("/data/programs/pipelines/GWASannotation/04_utils/ProGeM_functions.R"))
 start_time_main <- Sys.time()
 
-
+#create a temporary symlink with my python path
+system("TEMP_SYMLINK=\"$HOME/bin/python\"; if [ ! -f $TEMP_SYMLINK ]; then ln -s /scratch/global/martins/anaconda3/bin/python3.9 $TEMP_SYMLINK; fi; which python")
+#system("ln -s /scratch/global/martins/anaconda3/bin/python3.9 $TEMP_SYMLINK") #use my python path
 ## check python version and dependencies
 system_status <- system("/data/programs/pipelines/GWASannotation/04_utils/check_environment.sh")
 
@@ -40,10 +42,10 @@ option_list = list(
     make_option("--pQTL_datasets_coloc", action="store", default=c("Icelanders_pGWAS", "UKB_PPP_EUR"), type='character', help="comma separated pQTL datasets to use for coloc (default=c('Icelanders_pGWAS','UKB_PPP_EUR')"),
     make_option("--coloc_input_path", action="store", default=NA, type='character', help="path with coloc results for the selected databases (default=NA and runs coloc analysis)"),
     make_option("--r2_thresh", action="store", default=0.8, type='numeric', help="Threshold for r2 values (default=0.8)"),
-    make_option("--interval_kb", action="store", default=500, type='numeric', help="Genomic interval (in kb) either side of the sentinel SNP (default=500)"),
-    make_option("--LD_region_overhang_kb", action="store", default=5, type='numeric', help="Genomic interval (in kb) of the overhang of the left-most and right-most proxy/sentinel variant at each locus (default=5)"),
-    make_option("--sumstats_2_max_nlog10P_thresh", action="store", default=-log10(5e-8), type='numeric', help="sumstats_2_max_nlog10P will be filtered for > this threshold (default=-log10(5e-8))"),
-    make_option("--PP.H4.abf_thresh", action="store", default=0.8, type='numeric', help="PP.H4.abf will be filtered for > this threshold (default=0.8)"))
+    make_option("--interval_window_kb", action="store", default=500, type='numeric', help="Genomic interval (in kb) either side of the sentinel SNP (default=500), used to define genes that nearby the index SNP"),
+    make_option("--LD_region_overhang_kb", action="store", default=5, type='numeric', help="Genomic interval (in kb) of the overhang of the left-most and right-most proxy/index SNP at each locus (default=5), used to identify genes with variants in LD with index or proxy SNPs"),
+    make_option("--sumstats_2_max_nlog10P_thresh", action="store", default=-log10(5e-8), type='numeric', help="sumstats_2_max_nlog10P will be filtered for > this threshold for the eQTL and pQTL datasets used for colocalization (default=-log10(5e-8))"),
+    make_option("--PP.H4.abf_thresh", action="store", default=0.8, type='numeric', help="PP.H4.abf (coloc) will be filtered for > this threshold (default=0.8)"))
 
  
 
@@ -117,8 +119,8 @@ filtering_required <- FALSE
 r2_thresh <- opt$r2_thresh
 
 # Genomic interval (in kb) either side of the sentinel SNP:
-#interval_kb <- 500										# default is 500kb.
-interval_kb <- opt$interval_kb
+#interval_kb <- 1000										# default is 1000kb.
+interval_kb <- opt$interval_window_kb
 #------------------------------------------------------------------------------------------------------
 ## 3. PARAMETERS FOR BOTTOM-UP APPROACH
 
@@ -203,7 +205,7 @@ cat(sprintf("STEP1 done; took %.2f minutes\n", execution_time_minutes), "\n\n")
 rm(execution_time_seconds)
 rm(execution_time_minutes)
 
-if (file.exists(paste0(output_path,"_subset.txt.gz")) &
+if (file.exists(paste0(output_path,"_subset.tsv.gz")) &
   file.exists(paste0(output_path,"_coloc_regions.RDS")) &
   file.exists(paste0(output_path,"_sentinel.txt")) &
   file.exists(paste0(output_path,"_proxies.txt")) &
@@ -336,7 +338,7 @@ file.exists(paste0(output_dir,"OUTPUT_top_down_scores.txt"))) {
   start_time8 <- Sys.time()
   rm(opt)
   
-  source("/data/programs/pipelines/GWASannotation/00_scripts/08_postprocessing_ProGeM.R")
+  source("/data/programs/pipelines/GWASannotation/00_scripts/08_postprocessing_SMM.R")
   
   end_time8 <- Sys.time()
   execution_time_seconds <- as.numeric(difftime(end_time8, start_time8, units = "secs"))
@@ -358,4 +360,5 @@ execution_time_minutes <- execution_time_seconds / 60
 cat(sprintf("Pipeline took %.2f minutes\n", execution_time_minutes), "\n\n")
 rm(execution_time_seconds)
 rm(execution_time_minutes)
+system("rm $TEMP_SYMLINK")
 cat("##################################################\n############### Pipeline complete! ############### \n################################################## \n")

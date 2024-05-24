@@ -7,7 +7,7 @@ function check_python_env() {
             echo "Python 3 is installed"
     else
         echo "Python 3 is not installed"
-        return 1
+        exit 1
     fi
     
     # Check if the module is installed
@@ -15,11 +15,10 @@ function check_python_env() {
         echo "$1 is installed"
     else
         echo "$1 is not installed"
-        return 1
+        exit 1
     fi
 }
 
-# Usage example
 if check_python_env "sklearn.linear_model"; then
     echo "Environment check passed"
 else
