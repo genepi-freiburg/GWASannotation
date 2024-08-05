@@ -10,15 +10,13 @@ library(writexl)
 library(dplyr)
 library(biomaRt)
 
-#devtools::load_all("/data/programs/pipelines/genepicoloc/genepicoloc_package")
+devtools::load_all("/data/programs/pipelines/genepicoloc/genepicoloc_package")
 #sapply(list.files("/data/programs/pipelines/genepicoloc/custom_scripts/source", full.names = T), source)
-devtools::load_all("/data/programs/pipelines/genepicoloc/custom_scripts/genepicoloc_dev")
-sapply(list.files("/data/programs/pipelines/genepicoloc/custom_scripts/genepicoloc_dev/source", full.names = T), source)
 
 suppressMessages(library(optparse))
 cat("\nImported required packages.\n")
 ### Functions
-source(file = file.path("/data/programs/pipelines/GWASannotation/04_utils/ProGeM_functions.R"))
+source(file = file.path("/data/programs/pipelines/GWASannotation/GWASannotation_dev/04_utils/ProGeM_functions.R"))
 start_time_main <- Sys.time()
 
 #create a temporary symlink with my python path
@@ -56,7 +54,7 @@ opt = parse_args(OptionParser(option_list=option_list))
 #############################################################################
 ## 1. DIRECTORIES AND FILES
 folder_path <- dirname(opt$output_path)
-#folder_path <- dirname("/data/studies/06_UKBB/02_Projects/14_MRI-kidney/02_output/model1_qnorm_hilus.bsa_final_volume/GWAS_Annotation_MRI_38k_LD/cond_stats/snps_model1_qnorm_hilus.bsa_4_18751406_19751406_chr4:18938095:T:C/4:18938095:T:C")
+folder_path <- dirname("/data/studies/06_UKBB/02_Projects/14_MRI-kidney/02_output/model1_qnorm_hilus.bsa_final_volume/GWAS_Annotation_MRI_38k_LD/cond_stats/snps_model1_qnorm_hilus.bsa_4_18751406_19751406_chr4:18938095:T:C/4:18938095:T:C")
 output_dir <- paste0(folder_path, "/GWASAnno/")
 dir.create(output_dir)
 
@@ -68,22 +66,22 @@ gene_model_filename <- "/data/programs/bin/gwas/PRoGeM/GRCh38_genes.RData"      
 
 #MAGMA files
 bfile=opt$bfile
-#bfile="/data/studies/06_UKBB/01_Data/02_Genetic_Data/UKBB_MRI_38k_MAF001/plink/chrpos/hg38/UKBB_MRI_38k_MAF001_hg38_allchr"
+bfile="/data/studies/06_UKBB/01_Data/02_Genetic_Data/UKBB_MRI_38k_MAF001/plink/chrpos/hg38/UKBB_MRI_38k_MAF001_hg38_allchr"
 magma_annotated_genes=opt$magma_annotated_genes
 magma_annotated_genes=""
 
 #Coloc datasets
 possible_eQTL_dataset <- c("GTEXv8", "Kidney_eQTL", "eQTLGen")
-eQTL_datasets_coloc <- unlist(strsplit(opt$eQTL_datasets_coloc, ","))
-#eQTL_datasets_coloc <- c("GTEXv8", "Kidney_eQTL", "eQTLGen") ###################################
+#eQTL_datasets_coloc <- unlist(strsplit(opt$eQTL_datasets_coloc, ","))
+eQTL_datasets_coloc <- c("GTEXv8", "Kidney_eQTL", "eQTLGen") ###################################
 if (!all(eQTL_datasets_coloc %in% possible_eQTL_dataset)) {
   cat("--eQTL_datasets_coloc (", eQTL_datasets_coloc,  ") doesn't correspond to an available eQTL dataset \n")
   cat("Available eQTL datasets are:", paste(possible_eQTL_dataset,collapse = ", "),  "\n")
   stop("Aborting pipeline due to invalid eQTL dataset.")
 }
 possible_pQTL_dataset <- c("ARIC_pGWAS", "Icelanders_pGWAS","UKB_PPP_EUR")
-pQTL_datasets_coloc <- unlist(strsplit(opt$pQTL_datasets_coloc, ","))
-#pQTL_datasets_coloc<- c("Icelanders_pGWAS", "UKB_PPP_EUR") #####################
+#pQTL_datasets_coloc <- unlist(strsplit(opt$pQTL_datasets_coloc, ","))
+pQTL_datasets_coloc<- c("Icelanders_pGWAS", "UKB_PPP_EUR") #####################
 if (!all(pQTL_datasets_coloc %in% possible_pQTL_dataset)) {
   cat("--pQTL_datasets_coloc (", pQTL_datasets_coloc,  ") doesn't correspond to an available pQTL dataset \n")
   cat("Available pQTL datasets are:", paste(possible_pQTL_dataset,collapse = ", "),  "\n")
@@ -91,12 +89,11 @@ if (!all(pQTL_datasets_coloc %in% possible_pQTL_dataset)) {
 }
 
 datasets_coloc=c(eQTL_datasets_coloc, pQTL_datasets_coloc)
-print("datsets used for coloc")
-print(datasets_coloc)
+
 #tissues of interest - needs a couple of CHECKS!!!!
-#eQTL_tissues_interest_coloc <- c("Kidney_Cortex", "Spleen", "Whole_Blood", "Kidney_eQTL.TubsigeQTLs", "Kidney_eQTL.GlomsigeQTLs", "Kidney_eQTL_Meta_S686_Significant.q0.01", "CXTubsigeQTLs", "CXGlomsigeQTLs") ###################
-tissues_interest <- unlist(strsplit(opt$eQTL_tissues_interest_coloc, ","))
-#tissues_interest <- eQTL_tissues_interest_coloc
+eQTL_tissues_interest_coloc <- c("Kidney_Cortex", "Spleen", "Whole_Blood", "Kidney_eQTL.TubsigeQTLs", "Kidney_eQTL.GlomsigeQTLs", "Kidney_eQTL_Meta_S686_Significant.q0.01", "CXTubsigeQTLs", "CXGlomsigeQTLs") ###################
+#tissues_interest <- unlist(strsplit(opt$eQTL_tissues_interest_coloc, ","))
+tissues_interest <- eQTL_tissues_interest_coloc
 
 if(is.na(opt$coloc_input_path)){
     coloc_path <- paste0(folder_path, "/coloc/output/")   
@@ -143,7 +140,7 @@ number_of_nearest <- 3		# default is 3.
 biotype_of_interest <- "protein_coding"								# default is "protein_coding".
 
 # Column indices in the VEP output that contain the following information:
-sentinel_rsID_column <- 40 #have to recheck, before was 13
+sentinel_rsID_column <- 1 #have to recheck, before was 13
 proxy_rsID_column <- 1
 ensembl_gene_id_column <- 4
 IMPACT_column <- 14
@@ -201,8 +198,7 @@ cat("##################################################\n######## STEP1: Perform
 start_time1 <- Sys.time()
 output_path <- opt$output_path
 GWAS_RDS <- opt$GWAS_RDS
-
-source("/data/programs/pipelines/GWASannotation/00_scripts/01_preprocessing.R")
+source("/data/programs/pipelines/GWASannotation/GWASannotation_dev/00_scripts/01_preprocessing.R")
 end_time1 <- Sys.time()
 
 execution_time_seconds <- as.numeric(difftime(end_time1, start_time1, units = "secs"))
@@ -236,7 +232,6 @@ if (file.exists(paste0(output_path,"_subset.tsv.gz")) &
   # If output file doesn't exist, print an error message and abort the pipeline
   stop("Output file of 01_preprocessing.R does not exist. Aborting the pipeline.")
 }
-
 if (is.na(opt$coloc_input_path)){
     cat("##################################################\n########### STEP3: run MAGMA and PoPS ############\n########### AND ############\n\n########### ###### STEP5: Performing eQTL and pQTL colocalization ######\n################################################## \n")
     input_magma=paste0(output_path,"_input_magma.txt")
@@ -269,8 +264,7 @@ if (is.na(opt$coloc_input_path)){
     cat("##################################################\n########### STEP3: run MAGMA and PoPS ############\n################################################## \n")
     input_magma=paste0(output_path,"_input_magma.txt")
     start_time3 <- Sys.time()
-    #system(paste("/data/programs/pipelines/GWASannotation/00_scripts/03_magma_and_pops.sh ", input_magma, output_path, bfile, magma_annotated_genes, sep=" "))
-    system(paste0("/data/programs/pipelines/GWASannotation/00_scripts/03_magma_and_pops.sh ", input_magma, " ", output_path, " ", bfile, " ", magma_annotated_genes, " > ", output_path, "_STEP3_log.txt  2>&1"), wait = FALSE)
+    system(paste("/data/programs/pipelines/GWASannotation/00_scripts/03_magma_and_pops.sh ", input_magma, output_path, bfile, magma_annotated_genes, sep=" "))
     end_time3 <- Sys.time()
     execution_time_seconds <- as.numeric(difftime(end_time3, start_time3, units = "secs"))
     execution_time_minutes <- execution_time_seconds / 60
@@ -279,34 +273,27 @@ if (is.na(opt$coloc_input_path)){
     rm(execution_time_minutes)
     coloc_path <- opt$coloc_input_path
 }
-
-if (file.exists(paste0(output_path,".preds"))) {
-  cat("##################################################\n############ STEP4: PoPS_make_GRanges ############ \n################################################## \n")
-  PoPS_results = paste0(output_path, ".preds")
-  start_time4 <- Sys.time()
-  source("/data/programs/pipelines/GWASannotation/00_scripts/04_Pops_make_GRanges.R")
-  end_time4 <- Sys.time()
-  execution_time_seconds <- as.numeric(difftime(end_time4, start_time4, units = "secs"))
-  execution_time_minutes <- execution_time_seconds / 60
-  cat(sprintf("STEP4 done; took %.2f minutes\n", execution_time_minutes), "\n\n")
-  rm(execution_time_seconds)
-  rm(execution_time_minutes)
-  
-} else {
-    log <- readLines(paste0(output_path, "_STEP3_log.txt"))
-    if (any(grepl("Terminating program", log))) {
-      cat("magma failed, please check log. magma and PoPS will NOT be used for annotation!")
+if (FALSE){
+    if (file.exists(paste0(output_path,".preds"))) {
+      cat("##################################################\n############ STEP4: PoPS_make_GRanges ############ \n################################################## \n")
+      PoPS_results = paste0(output_path, ".preds")
+      start_time4 <- Sys.time()
+      source("/data/programs/pipelines/GWASannotation/00_scripts/04_Pops_make_GRanges.R")
+      end_time4 <- Sys.time()
+      execution_time_seconds <- as.numeric(difftime(end_time4, start_time4, units = "secs"))
+      execution_time_minutes <- execution_time_seconds / 60
+      cat(sprintf("STEP4 done; took %.2f minutes\n", execution_time_minutes), "\n\n")
+      rm(execution_time_seconds)
+      rm(execution_time_minutes)
+      
+    } else {
+        log <- readLines(paste0(output_path, "_magma.log"))
+        if (any(grepl("Terminating program", log))) {
+          cat("magma failed, please check log. magma and PoPS will NOT be used for annotation!")
+        }
+      stop("Output file of 03_magma_and_pops.sh does not exist. Aborting the pipeline.")
     }
-    if (any(grepl("PoPs command failed", log))) {
-      cat("PoPs failed, please check log. magma and PoPS will NOT be used for annotation!")
-    }
-    #log <- readLines(paste0(output_path, "_magma.log"))
-    #if (any(grepl("Terminating program", log))) {
-    #  cat("magma failed, please check log. magma and PoPS will NOT be used for annotation!")
-    #}
-  #stop("Output file of 03_magma_and_pops.sh does not exist. Aborting the pipeline.")
 }
-
 if (file.exists(paste0(coloc_path,"/",datasets_coloc[1], ".RDS"))) {
     cat("########################################################\n###### STEP6: Prepare coloc QTL results for ProGEM ###### \n######################################################## \n")
     start_time6 <- Sys.time()
@@ -344,7 +331,7 @@ file.exists(paste0(coloc_path,"input_Progem_pQTL.txt"))) {
     cat("##################################################\n############### STEP7: Run ProGEM ################ \n################################################## \n")
     start_time7 <- Sys.time()
     cat("source 07_run_ProGeM.R \n")
-    source("/data/programs/pipelines/GWASannotation/00_scripts/07_run_ProGeM.R")
+    source("/data/programs/pipelines/GWASannotation/GWASannotation_dev/00_scripts/07_run_ProGeM.R")
     end_time7 <- Sys.time()
     execution_time_seconds <- as.numeric(difftime(end_time7, start_time7, units = "secs"))
     execution_time_minutes <- execution_time_seconds / 60
@@ -360,7 +347,7 @@ if (file.exists(paste0(output_dir,"OUTPUT_bottom_up_summary.txt"))) {
   start_time8 <- Sys.time()
   rm(opt)
   
-  source("/data/programs/pipelines/GWASannotation/00_scripts/08_postprocessing_SMM.R")
+  source("/data/programs/pipelines/GWASannotation/GWASannotation_dev/00_scripts/08_postprocessing_SMM.R")
   
   end_time8 <- Sys.time()
   execution_time_seconds <- as.numeric(difftime(end_time8, start_time8, units = "secs"))
@@ -380,7 +367,7 @@ execution_time_seconds <- as.numeric(difftime(end_time_main, start_time_main, un
 execution_time_minutes <- execution_time_seconds / 60
 # Print the execution time
 cat(sprintf("Pipeline took %.2f minutes\n", execution_time_minutes), "\n\n")
-#rm(execution_time_seconds)
-#rm(execution_time_minutes)
-#system("rm $TEMP_SYMLINK")
+rm(execution_time_seconds)
+rm(execution_time_minutes)
+system("rm $TEMP_SYMLINK")
 cat("##################################################\n############### Pipeline complete! ############### \n################################################## \n")

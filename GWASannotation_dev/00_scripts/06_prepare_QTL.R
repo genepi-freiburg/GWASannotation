@@ -26,7 +26,7 @@ merge_coloc_sentinel <- function(coloc_path, dataset, regions.file, tophit.file)
     colnames(tophit) <- c("rsID", "CHR_var", "snpPOS")
     
     summary <- summary[!is.na(summary$PP.H4.abf) & summary$PP.H4.abf > 0.5, ]
-    cat("nr of rows with PP.H4 > ", eqtl_PP.H4.abf_thresh," : ", nrow(summary), "\n")
+    cat("nr of rows with PP.H4 > 0.5: ", nrow(summary), "\n")
     
     # Merge coloc results with regions to get rsID
     summary.m1 <- merge(summary, regions, sort = FALSE, by = c("CHR_var", "BP_START_var", "BP_STOP_var"))

@@ -2,22 +2,25 @@ library(optparse)
 library(writexl)
 library(dplyr)
 library(readxl)
+library(data.table)
+
 
 option_list <- list(
   make_option("--output_path", action="store", default=NA, type='character', help="output_path for GWASAnno full path [required]"),
   make_option("--output_file_name", action="store", default="GWASAnno_summary.txt", type='character', help="output file name [default='GWASAnno_summary.txt]'"),
   make_option("--eQTL_tissues_interest_coloc", action="store", default=NA, type='character', help="Comma-separated tissues of interest previously selected from the eQTL datasets [default=NA]"),
   make_option("--nearest", action="store", default="1", type='numeric', help="nearest score [default=1]"),
-  make_option("--second_nearest", action="store", default="0.5", type='numeric', help="second_nearest score [default=0.5]"),
-  make_option("--third_nearest", action="store", default="0.25", type='numeric', help="third_nearest score [default=0.25]"),
+  make_option("--second_nearest", action="store", default="0.99", type='numeric', help="second_nearest score [default=0.99]"),
+  make_option("--third_nearest", action="store", default="0.98", type='numeric', help="third_nearest score [default=0.98]"),
   make_option("--LD_overlapping", action="store", default="1", type='numeric', help="LD_overlapping score [default=1"),
-  make_option("--lead_IMPACT", action="store", default="1", type='numeric', help="lead_IMPACT score [default=1]"),
-  make_option("--coloc_eQTL_tissues_interest", action="store", default="1", type='numeric', help="coloc_eQTL_tissues_interest score (if --eQTL_tissues_interest_coloc are not defined, coloc_eQTL takes the score value of --coloc_eQTL_tissues_interest ) [default=1]"),
-  make_option("--lead_eQTL", action="store", default="0.25", type='numeric', help="lead_eQTL or proxie_eQTL score [default=0.25]"),
-  make_option("--coloc_pQTL", action="store", default="1", type='numeric', help="coloc_pQTL score [default=1]"),
-  make_option("--PoPS_top1", action="store", default="1", type='numeric', help="PoPS_top1 score [default=1]"),
-  make_option("--PoPS_top2", action="store", default="0.5", type='numeric', help="PoPS_top2 score [default=0.5]"),
-  make_option("--PoPS_top3", action="store", default="0.25", type='numeric', help="PoPS_top3 score [default=0.5]")
+  make_option("--lead_IMPACT", action="store", default="1.02", type='numeric', help="lead_IMPACT score [default=1.02]"),
+  make_option("--coloc_eQTL_tissues_interest", action="store", default="1.04", type='numeric', help="coloc_eQTL_tissues_interest score (if --eQTL_tissues_interest_coloc are not defined, --coloc_eQTL_tissues_interest is not used) [default=1.04]"),
+  make_option("--coloc_eQTL", action="store", default="1.03", type='numeric', help="coloc_eQTL score (if --eQTL_tissues_interest_coloc is defined, this score is only applied if NO coloc_eQTL_tissues_interest is identified) [default=1.03]"),
+  make_option("--lead_eQTL", action="store", default="0.75", type='numeric', help="lead_eQTL or proxie_eQTL score (this score is only applied if NO coloc_eQTL is identified) [default=0.75]"),
+  make_option("--coloc_pQTL", action="store", default="1.04", type='numeric', help="coloc_pQTL score [default=1.04]"),
+  make_option("--PoPS_top1", action="store", default="0", type='numeric', help="PoPS_top1 score [default=0]"),
+  make_option("--PoPS_top2", action="store", default="0", type='numeric', help="PoPS_top2 score [default=0]"),
+  make_option("--PoPS_top3", action="store", default="0", type='numeric', help="PoPS_top3 score [default=0]")
 )
 
 
@@ -43,6 +46,7 @@ tryCatch({
   LD_overlapping_score <-  opt$LD_overlapping
   lead_IMPACT_score <- opt$lead_IMPACT
   coloc_eQTL_tissues_interest_score <- opt$coloc_eQTL_tissues_interest
+  coloc_eQTL <- opt$coloc_eQTL
   lead_eQTL_score <- opt$lead_eQTL
   coloc_pQTL_score <- opt$coloc_pQTL
   PoPS_top1_score <- opt$PoPS_top1
@@ -61,16 +65,17 @@ tryCatch({
         summary <- paste0(output_dir, "GWASAnno_summary.txt")
         #scoring
         nearest_score <-  1
-        second_nearest_score <-  0.5
-        third_nearest_score <-  0.25
+        second_nearest_score <-  0.99
+        third_nearest_score <-  0.98
         LD_overlapping_score <- 1
-        lead_IMPACT_score <- 1
-        coloc_eQTL_tissues_interest_score <- 1
-        lead_eQTL_score <- 0.25
-        coloc_pQTL_score <- 1
-        PoPS_top1_score <- 1
-        PoPS_top2_score <- 0.5
-        PoPS_top3_score <- 0.25
+        lead_IMPACT_score <- 1.02
+        coloc_eQTL_tissues_interest_score <- 1.04
+        coloc_eQTL <- 1.03
+        lead_eQTL_score <- 0.75
+        coloc_pQTL_score <- 1.04
+        PoPS_top1_score <- 0
+        PoPS_top2_score <- 0
+        PoPS_top3_score <- 0
     }
 })
 
@@ -79,48 +84,62 @@ bottom_up[bottom_up$hgnc_symbol != "-", ]
 empty_symbol <- which(bottom_up$hgnc_symbol == "-")
 bottom_up$hgnc_symbol[empty_symbol] <- bottom_up$ensembl_id[empty_symbol]
 #dim(bottom_up)
-head(bottom_up)
+print("head bottom_up")
+print(head(bottom_up))
+if(file.exists(top_down.file)){
+    top_down <- read.table(top_down.file, header=TRUE, sep="\t")
+    #dim(top_down)
+    #head(top_down)
 
-top_down <- read.table(top_down.file, header=TRUE, sep="\t")
-#dim(top_down)
-#head(top_down)
+    top_down[top_down$hgnc_symbol == "-", ]
+    empty_symbol <- which(top_down$hgnc_symbol == "-")
+    top_down$hgnc_symbol[empty_symbol] <- top_down$ensembl_id[empty_symbol]
 
-top_down[top_down$hgnc_symbol == "-", ]
-empty_symbol <- which(top_down$hgnc_symbol == "-")
-top_down$hgnc_symbol[empty_symbol] <- top_down$ensembl_id[empty_symbol]
+    top_down$PoPS_top3 <- top_down$PoPS_top2 <- top_down$PoPS_top1 <- 0
+    #im(top_down)
+    head(top_down)
 
-top_down$PoPS_top3 <- top_down$PoPS_top2 <- top_down$PoPS_top1 <- 0
-#im(top_down)
-head(top_down)
+    for (rsid in unique(top_down$LEAD_rsID)) {
+        locus <- top_down[top_down$LEAD_rsID== rsid, ]
+        #print(dim(locus))
 
-for (rsid in unique(top_down$LEAD_rsID)) {
-    locus <- top_down[top_down$LEAD_rsID== rsid, ]
-    #print(dim(locus))
+        locus <- locus[order(locus$PoPS_score, decreasing = TRUE), ]
+        locus <- head(locus, n=3)
+        #print(dim(locus))
 
-    locus <- locus[order(locus$PoPS_score, decreasing = TRUE), ]
-    locus <- head(locus, n=3)
-    #print(dim(locus))
-
-    top_down[top_down$LEAD_rsID== rsid &
-        top_down$ensembl_id == locus$ensembl_id[1], "PoPS_top1"] <- 1
-
-    if (nrow(locus) >=2) {
         top_down[top_down$LEAD_rsID== rsid &
-            top_down$ensembl_id == locus$ensembl_id[2], "PoPS_top2"] <- 1
+            top_down$ensembl_id == locus$ensembl_id[1], "PoPS_top1"] <- 1
+
+        if (nrow(locus) >=2) {
+            top_down[top_down$LEAD_rsID== rsid &
+                top_down$ensembl_id == locus$ensembl_id[2], "PoPS_top2"] <- 1
+        }
+
+        if (nrow(locus) >=3) {
+            top_down[top_down$LEAD_rsID== rsid &
+                top_down$ensembl_id == locus$ensembl_id[3], "PoPS_top3"] <- 1
+        }
     }
 
-    if (nrow(locus) >=3) {
-        top_down[top_down$LEAD_rsID== rsid &
-            top_down$ensembl_id == locus$ensembl_id[3], "PoPS_top3"] <- 1
-    }
+    top_down <- top_down[top_down$PoPS_top1 != 0 | top_down$PoPS_top2 != 0 |
+        top_down$PoPS_top3 != 0, ]
+    #dim(top_down)
+
+    intersect(names(bottom_up), names(top_down))
+    m <- merge(bottom_up, top_down, all=TRUE)
+    m$PoPS_top1[is.na(m$PoPS_top1)] <- 0
+    m$PoPS_top2[is.na(m$PoPS_top2)] <- 0
+    m$PoPS_top3[is.na(m$PoPS_top3)] <- 0
+} else {
+    cat("TOPdown annotation not found, including only Bottom-up \n")
+    m <- bottom_up
+    print("head m")
+    print(head(m))
+    m$PoPS_top1 <- 0
+    m$PoPS_top2 <- 0
+    m$PoPS_top3 <- 0
+    #print(head(m))
 }
-
-top_down <- top_down[top_down$PoPS_top1 != 0 | top_down$PoPS_top2 != 0 |
-    top_down$PoPS_top3 != 0, ]
-#dim(top_down)
-
-intersect(names(bottom_up), names(top_down))
-m <- merge(bottom_up, top_down, all=TRUE)
 #dim(m)
 #names(m)
 
@@ -138,15 +157,14 @@ m$proxy_eQTL[is.na(m$proxy_eQTL)] <- 0
 m$lead_IMPACT[is.na(m$lead_IMPACT)] <- 0
 m$proxy_IMPACT[is.na(m$proxy_IMPACT)] <- 0
 
+
 m$coloc_eQTL[is.na(m$coloc_eQTL)] <- 0
 if (any(!is.na(tissues_interest))){
     m$coloc_eQTL_tissues_interest[is.na(m$coloc_eQTL_tissues_interest)] <- 0
 }
 m$coloc_pQTL[is.na(m$coloc_pQTL)] <- 0
 
-m$PoPS_top1[is.na(m$PoPS_top1)] <- 0
-m$PoPS_top2[is.na(m$PoPS_top2)] <- 0
-m$PoPS_top3[is.na(m$PoPS_top3)] <- 0
+
 
 # if pops is not NA and category is not NA: category - pops score (1)
 # pops.ind <- which(m$category>= min.cat & m$PoPS==1)
@@ -203,7 +221,7 @@ for (rsid in unique(m$LEAD_rsID)) {
             } else {
                 if (locus[i, "coloc_eQTL"] == 1) {
                     evidence <- c(evidence, "coloc_eQTL")
-                    cnt <- cnt + coloc_eQTL_tissues_interest_score/2
+                    cnt <- cnt + coloc_eQTL
                 } else {
                   if (locus[i, "lead_eQTL"]==1 | locus[i, "proxy_eQTL"]==1) {
                     evidence <- c(evidence, "cis-eQTL")
@@ -214,7 +232,7 @@ for (rsid in unique(m$LEAD_rsID)) {
         } else {
             if (locus[i, "coloc_eQTL"] == 1) {
                 evidence <- c(evidence, "coloc_eQTL")
-                cnt <- cnt + coloc_eQTL_tissues_interest_score
+                cnt <- cnt + coloc_eQTL
             }else {
               if (locus[i, "lead_eQTL"]==1 | locus[i, "proxy_eQTL"]==1) {
                 evidence <- c(evidence, "cis-eQTL")
@@ -249,7 +267,7 @@ for (rsid in unique(m$LEAD_rsID)) {
     }
 
     
-
+    print("here")
     custom_order <- c("nearest", "coloc_eQTL_tissues_interest" ,"coloc_eQTL", "coloc_pQTL", "LD_overlapping", "IMPACT_moderate_high", "PoPS_top1", "PoPS_top2", "PoPS_top3") 
     #evidence_type <- sub("^PoPS_top1_([-0-9.]+)$", "PoPS_top1", genes.df[genes.df$count == 1, ]$evidences)
     #evidence_type <- sub("^PoPS_top2_([-0-9.]+)$", "PoPS_top2", evidence_type)
@@ -277,11 +295,24 @@ for (rsid in unique(m$LEAD_rsID)) {
     genes.df$new.text <- paste0(genes.df$symbol, " (", genes.df$evidences, ")", " *score: ", genes.df$count)
     new.df <- data.frame(rsID = rsid,
               gene_evidences_all = paste(genes.df$new.text, collapse="; "),
-              gene_evidences_top1 = genes.df$new.text[1], gene_evidences_top2 = genes.df$new.text[2], gene_evidences_top2 = genes.df$new.text[3])
+              gene_evidences_top1 = genes.df$new.text[1], gene_evidences_top2 = genes.df$new.text[2], gene_evidences_top3 = genes.df$new.text[3])
     out.sum <- rbind(out.sum, new.df)
     #print(out.sum)
     # print(paste(genes.info, collapse="; "))
 }
+
+regions_file <- paste0(output_path, "_coloc_regions.RDS")
+regions_list <- readRDS(regions_file)
+regions <- regions_list$coloc_regions
+regions <- regions[which(regions$comment=="PASS"),]
+regions$P <- 10^(-regions$nlog10P)
+regions <- regions[,c("CHR_var", "BP_START_var", "BP_STOP_var","rsID","P","BETA","SE","AF")]
+regions <-  as.data.table(regions)
+out.sum <-  as.data.table(out.sum)
+#print("test")
+#print(head(regions))
+#print(head(out.sum))
+out.sum <- merge(regions, out.sum, by="rsID", all.x = TRUE)
 
 
 write.table(x= out.sum, file = summary, sep="\t", row.names = FALSE)

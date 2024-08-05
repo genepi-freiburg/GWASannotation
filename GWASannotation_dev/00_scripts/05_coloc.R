@@ -1,5 +1,3 @@
-devtools::load_all("/data/programs/pipelines/genepicoloc/genepicoloc_package")
-
 # Set parameters
 cat("Colocalization analysis \n")
 file <- paste0(output_path, "_subset.tsv.gz")
@@ -28,7 +26,6 @@ sumstats_1_args <- data.frame(sumstats_1_args, regions[["coloc_regions_PASS"]])
 ## ---- echo=T, eval = T--------------------------------------------------------
 #selected_studies <- c("ARIC_pGWAS", "GTEXv8", "Icelanders_pGWAS", "Kidney_eQTL", "UKB_PPP_EUR")
 selected_studies <- datasets_coloc
-print(datasets_coloc)
 #cat("coloc datasets: ", selected_studies, "\n")
 list_to_create_args <- list_to_create_args_list[selected_studies]
 list_of_args <- lapply(list_to_create_args, function(x) {
@@ -38,7 +35,7 @@ list_of_args <- lapply(list_to_create_args, function(x) {
 str(list_of_args, 1)
 
 ##############
-coloc_out <- Map(parallel_wrapper, list_of_args, dry_run = F, N_cpus_per_node = 10) 
+coloc_out <- Map(parallel_wrapper, list_of_args, dry_run = F, N_cpus_per_node = 10) #change back to 10
 
 summarize_coloc(selected_studies=selected_studies,
                 output_folder = "output",

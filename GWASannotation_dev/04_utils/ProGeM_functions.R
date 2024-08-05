@@ -83,18 +83,11 @@ gene_variant_distance_finder <- function(sentinel_variant_ranges, local_gene_ran
 
 
 nearest_genes_selector <- function(local_gene_ranges, annotation, biotype, number) {
-  #nearest_genes <- NULL
-  nearest_genes <- data.frame(
-      LEAD_rsID = character(),
-      distance_to_sentinel = integer(),
-      distance_ranking = integer(),
-      ensembl_id = character(),
-      hgnc_symbol = character(),
-      gene_biotype = character(),
-      stringsAsFactors = FALSE
-    )
-  
+  nearest_genes <- NULL
   annotation <- annotation[which(annotation$gene_biotype %in% biotype),]
+  if(nrow(annotation)==0){
+      cat("no nearest genes were found for the biotype of interest. Nearest genes not included!")
+  } else {
   unique_sentinels <- unique(mcols(local_gene_ranges)[[1]])
   for(i in 1:length(unique_sentinels)) {
     temp <- local_gene_ranges[which(mcols(local_gene_ranges)[[1]] == unique_sentinels[i])]
@@ -110,10 +103,10 @@ nearest_genes_selector <- function(local_gene_ranges, annotation, biotype, numbe
       }
     }
   }
-
   colnames(nearest_genes) <- c("LEAD_rsID", "distance_to_sentinel", "distance_ranking", "ensembl_id",
                                "hgnc_symbol", "gene_biotype")
   return(data.table(nearest_genes))
+  }
 }
 
 
@@ -276,7 +269,7 @@ top_down_scorer <- function(sentinels, metabolic_overlapping_genes) {
   return(data.table(top_down_scores))
 }
 
-bottom_up_summariser <- function(sentinels, nearest, LD_overlapping, LD_annotation, cis_eQTLs,
+bottom_up_summariser <- function(sentinels, nearest, LD_overlapping, LD_annotation, cis_eQTLs, 
                                  cis_eQTL_annotation) {
   bottom_up_summary <- NULL
   for(i in 1:length(sentinels$rsID)) {
@@ -284,10 +277,6 @@ bottom_up_summariser <- function(sentinels, nearest, LD_overlapping, LD_annotati
     lead <- sentinels$rsID[i]
     #print(lead)
     temp_nearest <- nearest$ensembl_id[which(nearest$LEAD_rsID == sentinels$rsID[i])]
-    if (length(temp_nearest) == 0) {
-      temp_nearest <- NA
-    }
-    
     temp_LD_overlapping <- names(LD_overlapping[which(mcols(LD_overlapping)[[1]] == sentinels$rsID[i])])
     temp_cis_eQTLs <- cis_eQTLs$ensembl_id[which(cis_eQTLs$rsID == sentinels$rsID[i])]
     
@@ -300,7 +289,7 @@ bottom_up_summariser <- function(sentinels, nearest, LD_overlapping, LD_annotati
     if(length(all_genes)>0){
     for(z in 1:length(all_genes)) {
 
-      if(!is.na(all_genes[z]) && all_genes[z] %in% nearest$ensembl_id) {
+      if(all_genes[z] %in% nearest$ensembl_id) {
         hgnc[z] <- nearest$hgnc_symbol[match(all_genes[z], nearest$ensembl_id)]
         biotype[z] <- nearest$gene_biotype[match(all_genes[z], nearest$ensembl_id)]
       }
@@ -311,19 +300,16 @@ bottom_up_summariser <- function(sentinels, nearest, LD_overlapping, LD_annotati
       else if(all_genes[z] %in% cis_eQTL_annotation$ensembl_gene_id) {
         hgnc[z] <- cis_eQTL_annotation$hgnc_symbol[match(all_genes[z], cis_eQTL_annotation$ensembl_gene_id)]
         biotype[z] <- cis_eQTL_annotation$gene_biotype[match(all_genes[z], cis_eQTL_annotation$ensembl_gene_id)]
-      } else {
-        hgnc[z] <- NA
-        biotype[z] <- NA
       }
     }
     temp_matrix <- matrix(data = 0,
-                          nrow = length(all_genes), ncol = 10,
+                          nrow = length(all_genes), ncol = 10, 
                           dimnames = list(NULL, c("LEAD_rsID", "ensembl_id",
-                                                  "hgnc_symbol", "gene_biotype", "nearest",
-                                                  "second_nearest", "third_nearest",
+                                                  "hgnc_symbol", "gene_biotype", "nearest", 
+                                                  "second_nearest", "third_nearest", 
                                                   "LD_overlapping", "lead_eQTL", "proxy_eQTL")))
     for(x in 1:length(all_genes)) {
-      if(!is.na(all_genes[x]) && all_genes[x] %in% temp_nearest) {
+      if(all_genes[x] %in% temp_nearest) {
         index <- which(temp_nearest == all_genes[x])
         if(index == 1) {
           temp_matrix[x, 5] <- 1
@@ -334,8 +320,6 @@ bottom_up_summariser <- function(sentinels, nearest, LD_overlapping, LD_annotati
         else if(index == 3) {
           temp_matrix[x, 7] <- 1
         }
-      } else if (is.na(temp_nearest)) {
-        temp_matrix[x, 5] <- NA
       }
       if(all_genes[x] %in% temp_LD_overlapping) {
         temp_matrix[x, 8] <- 1
@@ -344,7 +328,7 @@ bottom_up_summariser <- function(sentinels, nearest, LD_overlapping, LD_annotati
         index <- which(temp_cis_eQTLs == all_genes[x])
         
         if(lead_or_proxy[index] == "lead") {
-          temp_matrix[x, 9] <- 1
+          temp_matrix[x, 9] <- 1          
         }
         else if(lead_or_proxy[index] == "proxy") {
           temp_matrix[x, 10] <- 1
@@ -361,7 +345,6 @@ bottom_up_summariser <- function(sentinels, nearest, LD_overlapping, LD_annotati
   }
   return(data.table(bottom_up_summary))
 }
-
 
 
 VEP_integrator <- function(sentinels, bottom_up, VEP, sentinel_col, proxy_col, ensembl_col, IMPACT_col) {

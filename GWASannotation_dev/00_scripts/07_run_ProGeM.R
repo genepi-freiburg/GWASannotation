@@ -64,31 +64,31 @@ cat(paste("-------------------------------------------------------------------\n
 
 # create a genomic ranges object containing LD regions
 LD_region_ranges <- LD_region_range_finder(sentinel_data, proxy_data)
-save(LD_region_ranges,file = file.path(output_dir, "LD_region_ranges.RData"))
+
 # identify all genes that overlap the LD regions (+/-Xkb)
 LD_region_genes <- find_overlapping_genes(LD_region_ranges, ensembl_genes, 
                                           LD_region_overhang_kb)
-save(LD_region_genes,file = file.path(output_dir, "LD_region_genes.RData"))
+
 # annotate the genes in the above LD_region_overlapping_genes object
 LD_region_genes_annotated <- gene_annotator(unique(names(LD_region_genes)))
-save(LD_region_genes_annotated,file = file.path(output_dir, "LD_region_genes_annotated.RData"))
+
 cat("\t- Genes overlapping an LD region have been identified.\n")
 
 
 ## pull out the nearest genes to each sentinel variant
-#print("local_genes")
-#print(head(local_genes))
-#print("local_genes_annotation")
-#print(head(local_genes_annotation))
-#print("biotype_of_interest")
-#print(biotype_of_interest)
-#print("number_of_nearest")
-#print(number_of_nearest)
+print("local_genes")
+print(head(local_genes))
+print("local_genes_annotation")
+print(head(local_genes_annotation))
+print("biotype_of_interest")
+print(biotype_of_interest)
+print("number_of_nearest")
+print(number_of_nearest)
 
 nearest_genes <- nearest_genes_selector(local_genes, local_genes_annotation, biotype_of_interest, 
                                         number_of_nearest)
-#print("nearest_genes")
-#print(head(nearest_genes))
+print("nearest_genes")
+print(head(nearest_genes))
 
 cat(paste("\t- The ", number_of_nearest, " genes nearest to each sentinel have been identified.\n",
           sep = ""))
@@ -126,25 +126,17 @@ print("IDENTIFY GENES WITH INCREASED LIKELIHOOD OF HAVING A FUNCTIONAL IMPACT US
 
 # read in VEP output file
 file_conn <- file(VEP_filename, "r")
-
-
-
-# Read the first non-commented line
-first_line <- NULL
-while (TRUE) {
-  line <- readLines(file_conn, n = 1)
-  if (length(line) == 0) break
-  if (!startsWith(line, "#")) {
-    first_line <- line
-    break
-  }
-}
-# Ensure the file connection is closed after reading
-on.exit(close(file_conn))
-
-if (is.null(first_line)) {
-  print("No non-commented lines found")
-}
+ 
+ # Read the first non-commented line
+ first_line <- ""
+ while (length(first_line) == 0) {
+   line <- readLines(file_conn, n = 1)
+   if (length(line) == 0) break
+   if (!startsWith(line, "#")) first_line <- line
+ }
+ 
+ # Close the file connection
+ close(file_conn)
  
  # Check if the first non-commented line is empty or contains only whitespace
  if (nchar(trimws(first_line)) == 0) {
@@ -159,7 +151,7 @@ if (is.null(first_line)) {
      "CANONICAL", "gnomAD_AF", "gnomAD_AFR_AF", "gnomAD_AMR_AF", "gnomAD_ASJ_AF",
      "gnomAD_EAS_AF", "gnomAD_FIN_AF", "gnomAD_NFE_AF", "gnomAD_OTH_AF",
      "gnomAD_SAS_AF", "CLIN_SIG", "SOMATIC", "PHENO", "MOTIF_NAME",
-     "MOTIF_POS", "HIGH_INF_POS", "MOTIF_SCORE_CHANGE", "TRANSCRIPTION_FACTORS", "LEAD_rsID"
+     "MOTIF_POS", "HIGH_INF_POS", "MOTIF_SCORE_CHANGE", "TRANSCRIPTION_FACTORS"
    )
    
    # Create the data table with NA values and set column names
@@ -168,11 +160,7 @@ if (is.null(first_line)) {
  } else {
    VEP_annotations <- data.table(read.table(file = file.path(VEP_filename), header = FALSE,
                                             quote = NULL, sep = "\t", stringsAsFactors = FALSE))
-   #add collumn with index snp
-   p <- paste0(output_path,"_proxies.txt")
-   proxies <- data.table(read.table(file = file.path(p), header = TRUE, quote = NULL, sep = "\t", stringsAsFactors = FALSE))
-   proxies =as.data.frame(proxies)
-   VEP_annotations <- merge(VEP_annotations, proxies[, c("PROXY_rsID", "LEAD_rsID")], by.x ="V1", by.y = "PROXY_rsID", all.x = TRUE) }
+ }
  
  
 #print(head(VEP_annotations))
@@ -185,15 +173,11 @@ if(filtering_required == TRUE & length(r2_column) > 0) {
 VEP_IMPACTS_of_interest <- c("HIGH", "MODERATE")
 dim(VEP_annotations)
 VEP_annotations <- VEP_annotations[VEP_annotations[[IMPACT_column]] %in% VEP_IMPACTS_of_interest,]
-cat("VEP results that have a HIGH or MODERATE IMPACT :", nrow(VEP_annotations), "\n")
+cat("VEP results that have a HIGH or MODERATE IMPATCT :", nrow(VEP_annotations), "\n")
 # identify leads and proxies most likely to have a functional impact as per VEP annotation
 SNP_IMPACT_annotations <- VEP_integrator(sentinel_data, bottom_up_summary, VEP_annotations, sentinel_rsID_column, proxy_rsID_column,
                                          ensembl_gene_id_column, IMPACT_column)
-cat("SNP_IMPACT_annotations :", nrow(VEP_annotations), "\n")
 
-head(SNP_IMPACT_annotations)
-write.table(SNP_IMPACT_annotations, file = file.path(output_dir, "SNP_IMPACT_annotations.txt"),
-            quote = FALSE, row.names = FALSE, sep = "\t")
 # combine bottom_up_summary with the SNP_IMPACT_annotations
 bottom_up_summary <- cbind(bottom_up_summary, SNP_IMPACT_annotations)
 
@@ -314,8 +298,8 @@ cat("\t- Coloc pQTL information have been integrated.\n\n")
 # 1 = gene contains a lead or proxy with either a HIGH or MODERATE IMPACT (proximity and cis-eQTL evidence may also be present)
 # 2 = gene is proximal to lead; i.e., nearest or LD overlapping (cis-eQTL evidence may also be present)
 # 3 = gene is a cis-eQTL target of either the lead or a proxy variant
-
-
+print("head bottom_up_summary")
+print(head(bottom_up_summary))
 #bottom_up_summary <- bottom_up_classifier(bottom_up_summary)
 
 cat("Bottom-up annotation complete!\n\n")

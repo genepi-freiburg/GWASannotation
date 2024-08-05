@@ -43,7 +43,7 @@ if(genome_build=="hg37"){
                                 mc_cores=8, keep_lower=F, do_soring=T, rm_tmp_liftOver=T, do_Name_by_position=F)
 
    sumstats_liftOver$Name_hg38 <- paste0("chr", sumstats_liftOver$CHR_hg38, ":", sumstats_liftOver$POS_hg38,":", sumstats_liftOver$A2_hg38, ":",sumstats_liftOver$A1_hg38)
-   #print(head(sumstats_liftOver))
+   print(head(sumstats_liftOver))
    
    sumstats_1 <- read_sumstats(sumstats_liftOver,
                                Name="Name_hg38",
@@ -65,11 +65,6 @@ if(genome_build=="hg37"){
  
   #### save hg38 file
   cat("number of SNPs in hg38", nrow(sumstats_1))
-  #Name is for coloc - use inverted name
-  #rsID is for eveything else - use normal name that fits ld ref
-  sumstats_1$rsID <- sumstats_1$Name
-  sumstats_1$Name <- paste0("chr", sumstats_1$CHR, ":", sumstats_1$POS,":", sumstats_1$A1, ":",sumstats_1$A2)
-  print(head(sumstats_1))
   
   # Find duplicated names
   unique_rows <- sumstats_1 %>%
@@ -83,10 +78,10 @@ if(genome_build=="hg37"){
   saveRDS(unique_rows, paste0(opt$output_path, "_liftOver_hg38_dedup.RDS"))
 
 }else{
-    sumstats$Name_inv <- paste0("chr", sumstats$CHROM, ":", sumstats$GENPOS, ":", sumstats$ALLELE1, ":", sumstats$ALLELE0)
+    sumstats$Name <- paste(sumstats$CHROM, sumstats$GENPOS, sumstats$ALLELE0, sumstats$ALLELE1, sep = ":")
     sumstats_1 <- read_sumstats(sumstats,
-                                Name="ID",
-                                rsID = "Name_inv",
+                                Name="Name",
+                                rsID = "ID",
                                 CHR = "CHROM",
                                 POS = "GENPOS",
                                 A1 = "ALLELE1", #alternative
@@ -97,7 +92,6 @@ if(genome_build=="hg37"){
                                 AF = "A1FREQ")
     sumstats_1$N=sumstats$N #N is needed for magma input
     
-    #
     # Find duplicated names
     unique_rows <- sumstats_1 %>%
       group_by(Name) %>%
@@ -105,8 +99,7 @@ if(genome_build=="hg37"){
       ungroup()
     cat("number of SNPs after removing duplicated 'Name'", nrow(unique_rows))
     
-    
-    write.table(sumstats_1, paste0(opt$output_path,"_hg38.txt"), row.names=F, col.names=T, sep="\t", quote=F)
-    saveRDS(sumstats_1, paste0(opt$output_path, "_hg38.RDS"))
+    write.table(sumstats_1, paste0(opt$output_path,".txt"), row.names=F, col.names=T, sep="\t", quote=F)
+    saveRDS(sumstats_1, paste0(opt$output_path, ".RDS"))
     saveRDS(unique_rows, paste0(opt$output_path, "_dedup.RDS"))
 }
