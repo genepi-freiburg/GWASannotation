@@ -1,2 +1,0 @@
-LEAD_rsID	search_term	variant_id	gene_id	tss_distance	ma_samples	slope_se	tissue
-rs62114506	2_242793_	chr2_242793_G_C_b38	ENSG00000035115	-23605	215	0.0324909	Adipose_Visceral_Omentum.v8

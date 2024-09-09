@@ -17,10 +17,7 @@ option_list <- list(
   make_option("--coloc_eQTL_tissues_interest", action="store", default="1.04", type='numeric', help="coloc_eQTL_tissues_interest score (if --eQTL_tissues_interest_coloc are not defined, --coloc_eQTL_tissues_interest is not used) [default=1.04]"),
   make_option("--coloc_eQTL", action="store", default="1.03", type='numeric', help="coloc_eQTL score (if --eQTL_tissues_interest_coloc is defined, this score is only applied if NO coloc_eQTL_tissues_interest is identified) [default=1.03]"),
   make_option("--lead_eQTL", action="store", default="0.75", type='numeric', help="lead_eQTL or proxie_eQTL score (this score is only applied if NO coloc_eQTL is identified) [default=0.75]"),
-  make_option("--coloc_pQTL", action="store", default="1.04", type='numeric', help="coloc_pQTL score [default=1.04]"),
-  make_option("--PoPS_top1", action="store", default="0", type='numeric', help="PoPS_top1 score [default=0]"),
-  make_option("--PoPS_top2", action="store", default="0", type='numeric', help="PoPS_top2 score [default=0]"),
-  make_option("--PoPS_top3", action="store", default="0", type='numeric', help="PoPS_top3 score [default=0]")
+  make_option("--coloc_pQTL", action="store", default="1.04", type='numeric', help="coloc_pQTL score [default=1.04]")
 )
 
 
@@ -33,11 +30,9 @@ tryCatch({
   print(output_path)
   tissues_interest <- opt$eQTL_tissues_interest_coloc
   
-  # Reading and processing for bottom_up, top_down, and pops with optparse
-  bottom_up.file <- paste0(output_dir, "OUTPUT_bottom_up_summary.txt")
-  top_down.file <- paste0(output_dir,  "OUTPUT_top_down_scores.txt")
-  pops.file <- paste0(opt$output_path,"_PoPS.RData")
-  tophit.file <- paste0(opt$output_path,"_sentinel.txt")
+  # Reading and processing for anno with optparse
+  anno.file <- paste0(output_dir, "OUTPUT_anno_summary.txt")
+  tophit.file <- paste0(opt$output_path,"_lead.txt")
   summary <- paste0(output_dir, opt$output_file_name)
   #scoring
   nearest_score <-  opt$nearest
@@ -49,19 +44,14 @@ tryCatch({
   coloc_eQTL <- opt$coloc_eQTL
   lead_eQTL_score <- opt$lead_eQTL
   coloc_pQTL_score <- opt$coloc_pQTL
-  PoPS_top1_score <- opt$PoPS_top1
-  PoPS_top2_score <- opt$PoPS_top2
-  PoPS_top3_score <- opt$PoPS_top3
   opt_used <- TRUE
 }, error = function(e) {
   cat("")
 }, finally = {
     if (!opt_used) {
-        # Reading and processing for bottom_up, top_down, and pops
-        bottom_up.file <- paste0(output_dir, "OUTPUT_bottom_up_summary.txt")
-        top_down.file <- paste0(output_dir, "OUTPUT_top_down_scores.txt")
-        pops.file <- filename_PoPS
-        tophit.file <- sentinel_filename
+        # Reading and processing for anno
+        anno.file <- paste0(output_dir, "OUTPUT_anno_summary.txt")
+        tophit.file <- lead_filename
         summary <- paste0(output_dir, "GWASAnno_summary.txt")
         #scoring
         nearest_score <-  1
@@ -73,123 +63,45 @@ tryCatch({
         coloc_eQTL <- 1.03
         lead_eQTL_score <- 0.75
         coloc_pQTL_score <- 1.04
-        PoPS_top1_score <- 0
-        PoPS_top2_score <- 0
-        PoPS_top3_score <- 0
-        bottom_up <- read.table(bottom_up.file, header=TRUE, sep="\t")
-        bottom_up[bottom_up$hgnc_symbol != "-", ]
-        empty_symbol <- which(bottom_up$hgnc_symbol == "-")
-        bottom_up$hgnc_symbol[empty_symbol] <- bottom_up$ensembl_id[empty_symbol]
+        anno <- read.table(anno.file, header=TRUE, sep="\t")
+        anno[anno$hgnc_symbol != "-", ]
+        empty_symbol <- which(anno$hgnc_symbol == "-")
+        anno$hgnc_symbol[empty_symbol] <- anno$ensembl_id[empty_symbol]
 
     }
 })
 
 
-bottom_up <- read.table(bottom_up.file, header=TRUE, sep="\t")
-bottom_up[bottom_up$hgnc_symbol != "-", ]
-empty_symbol <- which(bottom_up$hgnc_symbol == "-")
-bottom_up$hgnc_symbol[empty_symbol] <- bottom_up$ensembl_id[empty_symbol]
+anno <- read.table(anno.file, header=TRUE, sep="\t")
+anno[anno$hgnc_symbol != "-", ]
+empty_symbol <- which(anno$hgnc_symbol == "-")
+anno$hgnc_symbol[empty_symbol] <- anno$ensembl_id[empty_symbol]
 
-#dim(bottom_up)
-if(file.exists(top_down.file)){
-    top_down <- read.table(top_down.file, header=TRUE, sep="\t")
-    #dim(top_down)
-    #head(top_down)
-
-    top_down[top_down$hgnc_symbol == "-", ]
-    empty_symbol <- which(top_down$hgnc_symbol == "-")
-    top_down$hgnc_symbol[empty_symbol] <- top_down$ensembl_id[empty_symbol]
-
-    top_down$PoPS_top3 <- top_down$PoPS_top2 <- top_down$PoPS_top1 <- 0
-    #im(top_down)
-    head(top_down)
-
-    for (rsid in unique(top_down$LEAD_rsID)) {
-        locus <- top_down[top_down$LEAD_rsID== rsid, ]
-        #print(dim(locus))
-
-        locus <- locus[order(locus$PoPS_score, decreasing = TRUE), ]
-        locus <- head(locus, n=3)
-        #print(dim(locus))
-
-        top_down[top_down$LEAD_rsID== rsid &
-            top_down$ensembl_id == locus$ensembl_id[1], "PoPS_top1"] <- 1
-
-        if (nrow(locus) >=2) {
-            top_down[top_down$LEAD_rsID== rsid &
-                top_down$ensembl_id == locus$ensembl_id[2], "PoPS_top2"] <- 1
-        }
-
-        if (nrow(locus) >=3) {
-            top_down[top_down$LEAD_rsID== rsid &
-                top_down$ensembl_id == locus$ensembl_id[3], "PoPS_top3"] <- 1
-        }
-    }
-
-    top_down <- top_down[top_down$PoPS_top1 != 0 | top_down$PoPS_top2 != 0 |
-        top_down$PoPS_top3 != 0, ]
-    #dim(top_down)
-
-    intersect(names(bottom_up), names(top_down))
-    m <- merge(bottom_up, top_down, all=TRUE)
-    m$PoPS_top1[is.na(m$PoPS_top1)] <- 0
-    m$PoPS_top2[is.na(m$PoPS_top2)] <- 0
-    m$PoPS_top3[is.na(m$PoPS_top3)] <- 0
-} else {
-    cat("TOPdown annotation not found, including only Bottom-up \n")
-    m <- bottom_up
-    if(nrow(m)>0){
-    m$PoPS_top1 <- 0
-    m$PoPS_top2 <- 0
-    m$PoPS_top3 <- 0
-    }
-    #print(head(m))
-}
-
-#dim(m)
-#names(m)
-
-# m[is.na(m)] <- 0
-# m$cis_eQTL <- ifelse(m$lead_eQTL==1 | m$proxy_eQTL==1, 1, 0)
-# m$IMPACT_moderate_high <- ifelse(m$lead_IMPACT== 1 | m$proxy_IMPACT==1, 1, 0)
-# m$category <- m$category - m$score
-if(nrow(m)>0){
-    m$nearest[is.na(m$nearest)] <- 0
-    m$second_nearest[is.na(m$second_nearest)] <- 0
-    m$third_nearest[is.na(m$third_nearest)] <- 0
-    m$LD_overlapping[is.na(m$LD_overlapping)] <- 0
-    m$lead_eQTL[is.na(m$lead_eQTL)] <- 0
-    m$proxy_eQTL[is.na(m$proxy_eQTL)] <- 0
-    m$lead_IMPACT[is.na(m$lead_IMPACT)] <- 0
-    m$proxy_IMPACT[is.na(m$proxy_IMPACT)] <- 0
+if(nrow(anno)>0){
+    anno$nearest[is.na(anno$nearest)] <- 0
+    anno$second_nearest[is.na(anno$second_nearest)] <- 0
+    anno$third_nearest[is.na(anno$third_nearest)] <- 0
+    anno$LD_overlapping[is.na(anno$LD_overlapping)] <- 0
+    anno$lead_eQTL[is.na(anno$lead_eQTL)] <- 0
+    anno$proxy_eQTL[is.na(anno$proxy_eQTL)] <- 0
+    anno$lead_IMPACT[is.na(anno$lead_IMPACT)] <- 0
+    anno$proxy_IMPACT[is.na(anno$proxy_IMPACT)] <- 0
 
 
-    m$coloc_eQTL[is.na(m$coloc_eQTL)] <- 0
+    anno$coloc_eQTL[is.na(anno$coloc_eQTL)] <- 0
     if (any(!is.na(tissues_interest))){
         #IF IT WASNT PREVIOUSLY SELECTED TISSUES OF INTEREST NEED TO BE CREATED NOW
-        m$coloc_eQTL_tissues_interest[is.na(m$coloc_eQTL_tissues_interest)] <- 0
+        anno$coloc_eQTL_tissues_interest[is.na(anno$coloc_eQTL_tissues_interest)] <- 0
     }
-    m$coloc_pQTL[is.na(m$coloc_pQTL)] <- 0
-    print(head(m))
-
-    # if pops is not NA and category is not NA: category - pops score (1)
-    # pops.ind <- which(m$category>= min.cat & m$PoPS==1)
-    # m[pops.ind,]
-    # (m$category[pops.ind] <- m$category[pops.ind] - m$PoPS[pops.ind])
-
-    # set category to the maximum category value when it only has PoPS
-    # m$category[is.na(m$category) & m$PoPS==1] <- max.cat
-
-    # df.order <- with(m, order(LEAD_rsID, category, -nearest, -second_nearest,
-    #     -third_nearest, - Score))
-    # m <- m[df.order, ]
+    anno$coloc_pQTL[is.na(anno$coloc_pQTL)] <- 0
+    print(head(anno))
 
     out.sum <- data.frame()
 
-    for (rsid in unique(m$LEAD_rsID)) {
+    for (rsid in unique(anno$LEAD_rsID)) {
         cat("rsid: ", rsid, "\n")
         genes.df <- data.frame()
-        locus <- m[m$LEAD_rsID== rsid, ]
+        locus <- anno[anno$LEAD_rsID== rsid, ]
         head(locus)
         #print(dim(locus))
         for (i in 1:nrow(locus)) {
@@ -250,43 +162,23 @@ if(nrow(m)>0){
                 evidence <- c(evidence, "coloc_pQTL")
                 cnt <- cnt + coloc_pQTL_score
             }
-
-            if (locus[i, "PoPS_top1"] == 1) {
-                evidence <- c(evidence,
-                    paste0("PoPS_top1_", round(locus[i, "PoPS_score"], 2)))
-                cnt <- cnt + PoPS_top1_score
-            }
-            if (locus[i, "PoPS_top2"] == 1) {
-                evidence <- c(evidence,
-                    paste0("PoPS_top2_", round(locus[i, "PoPS_score"], 2)))
-                cnt <- cnt + PoPS_top2_score
-            }
-            if (locus[i, "PoPS_top3"] == 1) {
-                evidence <- c(evidence,
-                    paste0("PoPS_top3_", round(locus[i, "PoPS_score"], 2)))
-                cnt <- cnt + PoPS_top3_score
-            }
-
-            gene.df <- data.frame(symbol=gene,
+         gene.df <- data.frame(symbol=gene,
                 evidences =paste(evidence, collapse=", "), count =cnt)
             genes.df <- rbind(genes.df, gene.df)
         }
 
         
         print("here")
-        custom_order <- c("nearest", "coloc_eQTL_tissues_interest" ,"coloc_eQTL", "coloc_pQTL", "LD_overlapping", "IMPACT_moderate_high", "PoPS_top1", "PoPS_top2", "PoPS_top3")
-        #evidence_type <- sub("^PoPS_top1_([-0-9.]+)$", "PoPS_top1", genes.df[genes.df$count == 1, ]$evidences)
-        #evidence_type <- sub("^PoPS_top2_([-0-9.]+)$", "PoPS_top2", evidence_type)
-        #evidence_type <- sub("^PoPS_top3_([-0-9.]+)$", "PoPS_top3", evidence_type)
-        
+        #custom_order <- c("nearest", "coloc_eQTL_tissues_interest" ,"coloc_eQTL", "coloc_pQTL", "LD_overlapping", "IMPACT_moderate_high")
+     
         # Group by count and reorder within each group
-        genes.df <- genes.df %>%
-          group_by(count) %>%
-          arrange(factor(evidences, levels = custom_order))
+       # genes.df <- genes.df %>%
+       #   group_by(count) %>%
+       #   arrange(factor(evidences, levels = custom_order))
         
-        genes.df <- genes.df[order(genes.df$count, decreasing = TRUE), ]
+       # genes.df <- genes.df[order(genes.df$count, decreasing = TRUE), ]
         # Print the resulting dataframe
-        print(genes.df)
+        #print(genes.df)
         
         # Order based on evidence type
         #subset_order <- order(factor(evidence_type, levels = custom_order))
@@ -341,20 +233,6 @@ outxlsx <- sub("\\.txt$", ".xlsx", summary)
 write_xlsx(x=out.sum, path = outxlsx, format_headers = TRUE)
 cat("summary file done \n")
 
-#tophit=read.table(tophit.file, header=T)
-#cat("sentinel file \n")
-#dim(tophit)
-#head(tophit)
-#tophit<- tophit %>%
- #   mutate(rsID = ifelse(startsWith(rsID, "rs"), rsID, paste0(CHR, ":", START)))
-#cat("merging ProGeM summary file with sentinel file \n")
-#progem <- out.sum
 
-
-#m <- merge(tophit, progem,  by="rsID", sort=FALSE)
-#dim(m)
-#names(m)
-
-#write_xlsx(x=m, path = paste0(output_dir, "ProGeM_sentinel.xlsx"), format_headers = TRUE)
-#cat("ProGeM_sentinel file done \n")
+#write_xlsx(x=m, path = paste0(output_dir, "ProGeM_lead.xlsx"), format_headers = TRUE)
 cat("## postprocessing finished ## \n")

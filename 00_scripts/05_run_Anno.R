@@ -1,44 +1,41 @@
 
 ########################################   CODE FOR EXECUTION   #######################################
 
-### READ IN SENTINEL AND PROXY DATA FILES AND FORMAT APPROPRIATELY
+### READ IN LEAD AND PROXY DATA FILES AND FORMAT APPROPRIATELY
 
-# read in sentinel and proxy data files
-sentinel_data <- data.table(read.table(file = file.path(sentinel_filename), header = TRUE,
+# read in lead and proxy data files
+lead_data <- data.table(read.table(file = file.path(lead_filename), header = TRUE,
                                        quote = NULL, sep = "\t",
                                        colClasses = c("character", "character", "numeric", "numeric")))
-sentinel_data=unique(sentinel_data)
+lead_data=unique(lead_data)
 proxy_data <- data.table(read.table(file = file.path(proxy_filename), header = TRUE,
                                     quote = NULL, sep = "\t", stringsAsFactors = FALSE,
                                     colClasses = c("character", "character", "numeric", "numeric",
                                                    "character", "numeric")))
 
-# filter proxies based on r2_thresh (if required) and remove sentinel records from proxy_data --> redundant - already done on 01_processing
-if(filtering_required == TRUE) {
-  proxy_data <- proxy_data[proxy_data$r2 >= r2_thresh,]
-}
-#remove the sentinel from the proxy_data dataset
+
+#remove the lead from the proxy_data dataset
 proxy_data <- proxy_data[-which(proxy_data$PROXY_rsID == proxy_data$LEAD_rsID),]
 
 
 # add a new column containing chromsome and position information in the format: "chr_position_" (this 
 # will be a search term for GTEX cis-eQTL data further down the script)
-GTEx_search_term <- paste(sentinel_data$CHR, "_", sentinel_data$START, "_", sep = "")
-sentinel_data <- cbind(sentinel_data, GTEx_search_term)
-sentinel_data$GTEx_search_term <- as.character(sentinel_data$GTEx_search_term)
+GTEx_search_term <- paste(lead_data$CHR, "_", lead_data$START, "_", sep = "")
+lead_data <- cbind(lead_data, GTEx_search_term)
+lead_data$GTEx_search_term <- as.character(lead_data$GTEx_search_term)
 
 GTEx_search_term <- paste(proxy_data$PROXY_CHR, "_", proxy_data$PROXY_START, "_", sep = "")
 proxy_data <- cbind(proxy_data, GTEx_search_term)
 proxy_data$GTEx_search_term <- as.character(proxy_data$GTEx_search_term)
 
-cat("Sentinel and proxy information read and formatted.\n\n")
+cat("lead and proxy information read and formatted.\n\n")
 
 
-### PULL OUT ALL GENES THAT RESIDE WITHIN +/-"X"kb FROM EACH SENTINEL VARIANT
+### PULL OUT ALL GENES THAT RESIDE WITHIN +/-"X"kb FROM EACH lead VARIANT
 
-# create a genomic ranges object for the sentinel variants
-sentinel_ranges <- GR_object_creator(sentinel_data$CHR, sentinel_data$START, sentinel_data$END,
-                                     sentinel_data$rsID)
+# create a genomic ranges object for the lead variants
+lead_ranges <- GR_object_creator(lead_data$CHR, lead_data$START, lead_data$END,
+                                     lead_data$rsID)
 
 # load a TxDb object containing ensembl genes according to build GRCh38 - this is based on the following
 load(file.path(gene_model_filename))
@@ -46,10 +43,10 @@ load(file.path(gene_model_filename))
 # To make it accessible to the function - use <<-
 ensembl_genes.df <<- as.data.frame(ensembl_genes)
 
-# identify all genes that reside +/- X kb from the sentinel variants
-local_genes <- find_overlapping_genes(sentinel_ranges, ensembl_genes, interval_kb)
-# determine distance between each local gene and the corresponding sentinel variant - rank accordingly
-local_genes <- gene_variant_distance_finder(sentinel_ranges, local_genes)
+# identify all genes that reside +/- X kb from the lead variants
+local_genes <- find_overlapping_genes(lead_ranges, ensembl_genes, interval_kb)
+# determine distance between each local gene and the corresponding lead variant - rank accordingly
+local_genes <- gene_variant_distance_finder(lead_ranges, local_genes)
 
 # annotate the genes in the above local_genes object
 local_genes_annotation <- gene_annotator(unique(names(local_genes)))
@@ -60,63 +57,63 @@ local_genes_annotation <- gene_annotator(unique(names(local_genes)))
 cat(paste("-------------------------------------------------------------------\n",
           "Beginning bottom-up annotation...\n\n", sep = ""))
 
-## pull out all genes from "GRCh37_genes" that overlap the LD region around each sentinel variant
+## pull out all genes from "GRCh37_genes" that overlap the LD region around each lead variant
 
 # create a genomic ranges object containing LD regions
-LD_region_ranges <- LD_region_range_finder(sentinel_data, proxy_data)
-
+LD_region_ranges <- LD_region_range_finder(lead_data, proxy_data)
+save(LD_region_ranges,file = file.path(output_dir, "LD_region_ranges.RData"))
 # identify all genes that overlap the LD regions (+/-Xkb)
 LD_region_genes <- find_overlapping_genes(LD_region_ranges, ensembl_genes, 
                                           LD_region_overhang_kb)
-
+save(LD_region_genes,file = file.path(output_dir, "LD_region_genes.RData"))
 # annotate the genes in the above LD_region_overlapping_genes object
 LD_region_genes_annotated <- gene_annotator(unique(names(LD_region_genes)))
-
+save(LD_region_genes_annotated,file = file.path(output_dir, "LD_region_genes_annotated.RData"))
 cat("\t- Genes overlapping an LD region have been identified.\n")
 
 
-## pull out the nearest genes to each sentinel variant
-print("local_genes")
-print(head(local_genes))
-print("local_genes_annotation")
-print(head(local_genes_annotation))
-print("biotype_of_interest")
-print(biotype_of_interest)
-print("number_of_nearest")
-print(number_of_nearest)
+## pull out the nearest genes to each lead variant
+#print("local_genes")
+#print(head(local_genes))
+#print("local_genes_annotation")
+#print(head(local_genes_annotation))
+#print("biotype_of_interest")
+#print(biotype_of_interest)
+#print("number_of_nearest")
+#print(number_of_nearest)
 
 nearest_genes <- nearest_genes_selector(local_genes, local_genes_annotation, biotype_of_interest, 
                                         number_of_nearest)
-print("nearest_genes")
-print(head(nearest_genes))
+#print("nearest_genes")
+#print(head(nearest_genes))
 
-cat(paste("\t- The ", number_of_nearest, " genes nearest to each sentinel have been identified.\n",
+cat(paste("\t- The ", number_of_nearest, " genes nearest to each lead have been identified.\n",
           sep = ""))
 
 
-## identify all cis-eQTL targets of the sentinel and proxy variants from GTEx data v6p
+## identify all cis-eQTL targets of the lead and proxy variants from GTEx data v6p
 
 cat("\t- Searching for cis-eQTL targets...\n")
 
 # search cis-eQTL files (NOTE: will take approx 10-15 minutes if all tissues have been chosen)
-cis_eQTL_hits <- cis_eQTL_target_finder(eQTLdata_dir, tissues_of_interest, sentinel_data, proxy_data)
+cis_eQTL_hits <- cis_eQTL_target_finder(eQTLdata_dir, tissues_of_interest, lead_data, proxy_data)
 print(cis_eQTL_hits)
 
 # format the cis_eQTL_hits list; i.e., add rsids and remove .* from ensembl_ids
-cis_eQTL_hits <- cis_eQTL_formatter(sentinel_data, proxy_data, cis_eQTL_hits)
+cis_eQTL_hits <- cis_eQTL_formatter(lead_data, proxy_data, cis_eQTL_hits)
 
-cis_eQTL_targets <- cis_eQTL_gene_extractor(sentinel_data, proxy_data, cis_eQTL_hits)
+cis_eQTL_targets <- cis_eQTL_gene_extractor(lead_data, proxy_data, cis_eQTL_hits)
 
 cis_eQTL_target_annotation <- gene_annotator(unique(cis_eQTL_targets$ensembl_id))
 cat("\t- Cis-eQTL targets have been identified.\n")
 
 
 ### SUMARISE BOTTOM-UP INFORMATION
-bottom_up_summary <- bottom_up_summariser(sentinel_data, nearest_genes, LD_region_genes, LD_region_genes_annotated, cis_eQTL_targets,
+anno_summary <- anno_summariser(lead_data, nearest_genes, LD_region_genes, LD_region_genes_annotated, cis_eQTL_targets,
                                           cis_eQTL_target_annotation)
-print("bottom_up_summariser done")
+print("anno_summariser done")
 # filter by biotype_of_interest
-bottom_up_summary <- bottom_up_summary[bottom_up_summary$gene_biotype == biotype_of_interest,]
+anno_summary <- anno_summary[anno_summary$gene_biotype == biotype_of_interest,]
 
 print("IDENTIFY GENES WITH INCREASED LIKELIHOOD OF HAVING A FUNCTIONAL IMPACT USING VEP ANNOTATION")
 ### IDENTIFY GENES WITH INCREASED LIKELIHOOD OF HAVING A FUNCTIONAL IMPACT USING VEP ANNOTATION
@@ -126,17 +123,25 @@ print("IDENTIFY GENES WITH INCREASED LIKELIHOOD OF HAVING A FUNCTIONAL IMPACT US
 
 # read in VEP output file
 file_conn <- file(VEP_filename, "r")
- 
- # Read the first non-commented line
- first_line <- ""
- while (length(first_line) == 0) {
-   line <- readLines(file_conn, n = 1)
-   if (length(line) == 0) break
-   if (!startsWith(line, "#")) first_line <- line
- }
- 
- # Close the file connection
- close(file_conn)
+
+
+
+# Read the first non-commented line
+first_line <- NULL
+while (TRUE) {
+  line <- readLines(file_conn, n = 1)
+  if (length(line) == 0) break
+  if (!startsWith(line, "#")) {
+    first_line <- line
+    break
+  }
+}
+# Ensure the file connection is closed after reading
+on.exit(close(file_conn))
+
+if (is.null(first_line)) {
+  print("No non-commented lines found")
+}
  
  # Check if the first non-commented line is empty or contains only whitespace
  if (nchar(trimws(first_line)) == 0) {
@@ -151,7 +156,7 @@ file_conn <- file(VEP_filename, "r")
      "CANONICAL", "gnomAD_AF", "gnomAD_AFR_AF", "gnomAD_AMR_AF", "gnomAD_ASJ_AF",
      "gnomAD_EAS_AF", "gnomAD_FIN_AF", "gnomAD_NFE_AF", "gnomAD_OTH_AF",
      "gnomAD_SAS_AF", "CLIN_SIG", "SOMATIC", "PHENO", "MOTIF_NAME",
-     "MOTIF_POS", "HIGH_INF_POS", "MOTIF_SCORE_CHANGE", "TRANSCRIPTION_FACTORS"
+     "MOTIF_POS", "HIGH_INF_POS", "MOTIF_SCORE_CHANGE", "TRANSCRIPTION_FACTORS", "LEAD_rsID"
    )
    
    # Create the data table with NA values and set column names
@@ -160,26 +165,31 @@ file_conn <- file(VEP_filename, "r")
  } else {
    VEP_annotations <- data.table(read.table(file = file.path(VEP_filename), header = FALSE,
                                             quote = NULL, sep = "\t", stringsAsFactors = FALSE))
- }
+   #add collumn with lead snp
+   p <- paste0(output_path,"_proxies.txt")
+   proxies <- data.table(read.table(file = file.path(p), header = TRUE, quote = NULL, sep = "\t", stringsAsFactors = FALSE))
+   proxies =as.data.frame(proxies)
+   VEP_annotations <- merge(VEP_annotations, proxies[, c("PROXY_rsID", "LEAD_rsID")], by.x ="V1", by.y = "PROXY_rsID", all.x = TRUE) }
  
  
 #print(head(VEP_annotations))
 print(dim(VEP_annotations))
-if(filtering_required == TRUE & length(r2_column) > 0) {
-  VEP_annotations <- VEP_annotations[VEP_annotations[[r2_column]] >= r2_thresh,]
-}
 
 # filter out all records that do not have either a "HIGH" or "MODERATE" IMPACT
 VEP_IMPACTS_of_interest <- c("HIGH", "MODERATE")
 dim(VEP_annotations)
 VEP_annotations <- VEP_annotations[VEP_annotations[[IMPACT_column]] %in% VEP_IMPACTS_of_interest,]
-cat("VEP results that have a HIGH or MODERATE IMPATCT :", nrow(VEP_annotations), "\n")
+cat("VEP results that have a HIGH or MODERATE IMPACT :", nrow(VEP_annotations), "\n")
 # identify leads and proxies most likely to have a functional impact as per VEP annotation
-SNP_IMPACT_annotations <- VEP_integrator(sentinel_data, bottom_up_summary, VEP_annotations, sentinel_rsID_column, proxy_rsID_column,
+SNP_IMPACT_annotations <- VEP_integrator(lead_data, anno_summary, VEP_annotations, lead_rsID_column, proxy_rsID_column,
                                          ensembl_gene_id_column, IMPACT_column)
+cat("SNP_IMPACT_annotations :", nrow(VEP_annotations), "\n")
 
-# combine bottom_up_summary with the SNP_IMPACT_annotations
-bottom_up_summary <- cbind(bottom_up_summary, SNP_IMPACT_annotations)
+head(SNP_IMPACT_annotations)
+write.table(SNP_IMPACT_annotations, file = file.path(output_dir, "SNP_IMPACT_annotations.txt"),
+            quote = FALSE, row.names = FALSE, sep = "\t")
+# combine anno_summary with the SNP_IMPACT_annotations
+anno_summary <- cbind(anno_summary, SNP_IMPACT_annotations)
 
 cat("\t- VEP annotations have been integrated.\n\n")
 
@@ -218,16 +228,16 @@ file_conn <- file(COLOC_EQTL_filename, "r")
 
     coloc_eqtl_data <- as.data.frame(coloc_eqtl_data)
     coloc_eqtl_data <- coloc_eqtl_data[!duplicated(coloc_eqtl_data[,
-                                                                 c(coloc_eqtl_sentinel_rsID_col, coloc_eqtl_ensembl_gene_id_col)]), ]
+                                                                 c(coloc_eqtl_lead_rsID_col, coloc_eqtl_ensembl_gene_id_col)]), ]
     coloc_eqtl_data <- data.table(coloc_eqtl_data)
 }
 # formatting so that it can be added to the bottom-up summary
-COLOC_EQTL_annotations <- COLOC_integrator(sentinel_data, bottom_up_summary,
-                                         coloc_eqtl_data, coloc_eqtl_sentinel_rsID_col,
+COLOC_EQTL_annotations <- COLOC_integrator(lead_data, anno_summary,
+                                         coloc_eqtl_data, coloc_eqtl_lead_rsID_col,
                                          coloc_eqtl_ensembl_gene_id_col)
 
-# combine bottom_up_summary with the COLOC EQTL annotation
-bottom_up_summary <- cbind(bottom_up_summary, COLOC_EQTL_annotations)
+# combine anno_summary with the COLOC EQTL annotation
+anno_summary <- cbind(anno_summary, COLOC_EQTL_annotations)
 
 cat("\t- Coloc eQTL information have been integrated.\n")
 
@@ -235,11 +245,11 @@ if(!is.na(tissues_interest)){
     #create a data.frame with tissues of interest
     coloc_eqtl_tissue_interest  <- coloc_eqtl_data[which(coloc_eqtl_data$Tissue %in% tissues_interest),]
     # formatting so that it can be added to the bottom-up summary
-    COLOC_EQTL_tissues_int_annotations <- COLOC_integrator(sentinel_data, bottom_up_summary, coloc_eqtl_tissue_interest, coloc_eqtl_sentinel_rsID_col,
+    COLOC_EQTL_tissues_int_annotations <- COLOC_integrator(lead_data, anno_summary, coloc_eqtl_tissue_interest, coloc_eqtl_lead_rsID_col,
                                              coloc_eqtl_ensembl_gene_id_col, QTL_type = "eQTL_tissues_interest")
 
-    # combine bottom_up_summary with the COLOC EQTL annotation
-    bottom_up_summary <- cbind(bottom_up_summary, COLOC_EQTL_tissues_int_annotations)
+    # combine anno_summary with the COLOC EQTL annotation
+    anno_summary <- cbind(anno_summary, COLOC_EQTL_tissues_int_annotations)
 
     cat("\t- Coloc eQTL tissues of interest information have been integrated.\n")
 }
@@ -280,84 +290,35 @@ file_conn <- file(COLOC_PQTL_filename, "r")
 
     coloc_pqtl_data <- as.data.frame(coloc_pqtl_data)
     coloc_pqtl_data <- coloc_pqtl_data[!duplicated(coloc_pqtl_data[,
-                                                                 c(coloc_pqtl_sentinel_rsID_col, coloc_pqtl_ensembl_gene_id_col)]), ]
+                                                                 c(coloc_pqtl_lead_rsID_col, coloc_pqtl_ensembl_gene_id_col)]), ]
     coloc_pqtl_data <- data.table(coloc_pqtl_data)
 }
 # formatting so that it can be added to the bottom-up summary
-COLOC_PQTL_annotations <- COLOC_integrator(sentinel_data, bottom_up_summary,
-                                         coloc_pqtl_data, coloc_pqtl_sentinel_rsID_col,
+COLOC_PQTL_annotations <- COLOC_integrator(lead_data, anno_summary,
+                                         coloc_pqtl_data, coloc_pqtl_lead_rsID_col,
                                          coloc_pqtl_ensembl_gene_id_col, QTL_type = "pQTL")
 
-# combine bottom_up_summary with the COLOC EQTL annotation
-bottom_up_summary <- cbind(bottom_up_summary, COLOC_PQTL_annotations)
+# combine anno_summary with the COLOC EQTL annotation
+anno_summary <- cbind(anno_summary, COLOC_PQTL_annotations)
 
 
 cat("\t- Coloc pQTL information have been integrated.\n\n")
 
-# classify bottom_up evidence according to source
+# classify anno evidence according to source
 # 1 = gene contains a lead or proxy with either a HIGH or MODERATE IMPACT (proximity and cis-eQTL evidence may also be present)
 # 2 = gene is proximal to lead; i.e., nearest or LD overlapping (cis-eQTL evidence may also be present)
 # 3 = gene is a cis-eQTL target of either the lead or a proxy variant
-print("head bottom_up_summary")
-print(head(bottom_up_summary))
-#bottom_up_summary <- bottom_up_classifier(bottom_up_summary)
-
-cat("Bottom-up annotation complete!\n\n")
-
-
-### IDENTIFY ALL TOP-DOWN CANDIDATES
-
-cat(paste("-------------------------------------------------------------------\n",
-          "Beginning top-down annotation...\n\n", sep = ""))
-if(file.exists(filename_PoPS)){
-    # load in PoPS result list of genomicRanges objects
-    load(file.path(filename_PoPS))
-
-    # identify top-down candidates and score each candidate accordingly
-    PoPS_overlapping_genes <- top_down_candidate_identifier(sentinel_ranges, annotated_PoPS_genes,
-                                                                 interval_kb)
-
-    write.table(PoPS_overlapping_genes, file = file.path(output_dir, "PoPS_overlapping_genes.txt"),
-                quote = FALSE, row.names = FALSE, sep = "\t")
-    #print("PoPS_overlapping_genes")
-    #print(head(PoPS_overlapping_genes))
-
-    top_down_scores <- top_down_scorer(sentinel_data, PoPS_overlapping_genes)
-    #print("top_down_scores")
-    #print(head(top_down_scores))
-
-    cat("\t- Top-down candidates have been identified and scored.\n\n")
-
-
-    # filter by biotype of interest
-    top_down_scores <- top_down_scores[top_down_scores$gene_biotype == biotype_of_interest,]
-
-    cat("Top-down annotation complete.\n\n")
-
-
-    ### IDENTIFY CO-OCCURRING GENES
-    cooccurring_candidates <- converging_candidate_finder(sentinel_data, bottom_up_summary, top_down_scores)
-    
-    # top-down scores
-    write.table(top_down_scores, file = file.path(output_dir, "OUTPUT_top_down_scores.txt"),
-                quote = FALSE, row.names = FALSE, sep = "\t")
-   
-   cat(paste("-------------------------------------------------------------------\n",
-                          "Cooccurring candidates identified.\n", sep = ""))
-   #cooccurring candidates
-   write.table(cooccurring_candidates, file = file.path(output_dir, "OUTPUT_cooccurring_candidates.txt"),
-                quote = FALSE, row.names = FALSE, sep = "\t")
-
-}  else {
-    cat("PoPS results not found. Top-down annotation was NOT integrated.\n\n")
-}
 
 
 
-### WRITE OUT PRIMARY INFORMATION TO FILE
+cat("Annotation complete!\n\n")
+
+
+
+### WRITE INFORMATION TO FILE
 
 # bottom-up summary
-write.table(bottom_up_summary, file = file.path(output_dir, "OUTPUT_bottom_up_summary.txt"), 
+write.table(anno_summary, file = file.path(output_dir, "OUTPUT_anno_summary.txt"),
             quote = FALSE, row.names = FALSE, sep = "\t")
 
 

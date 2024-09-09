@@ -3,13 +3,13 @@
 
 
 input_path=output_path
-tophit.file=paste0(input_path, "_sentinel.txt")
+tophit.file=paste0(input_path, "_lead.txt")
 regions.file=paste0(input_path, "_coloc_regions.RDS")
 
 #inc.datasets <- c("GTEXv8", "Kidney_eQTL","ARIC_pGWAS", "Icelanders_pGWAS", "UKB_PPP_EUR")
 inc.datasets <- datasets_coloc
 print(inc.datasets)
-merge_coloc_sentinel <- function(coloc_path, dataset, regions.file, tophit.file) {
+merge_coloc_lead <- function(coloc_path, dataset, regions.file, tophit.file) {
     summary.file <- paste0(coloc_path, dataset, ".RDS")
     # Check if files exist
     if (!file.exists(summary.file) | !file.exists(regions.file) | !file.exists(tophit.file)) {
@@ -32,7 +32,7 @@ merge_coloc_sentinel <- function(coloc_path, dataset, regions.file, tophit.file)
     summary.m1 <- merge(summary, regions, sort = FALSE, by = c("CHR_var", "BP_START_var", "BP_STOP_var"))
     # Print(dim(summary.m1))
     
-    # Merge with sentinel file
+    # Merge with lead file
     summary.m2 <- merge(tophit, summary.m1, sort = FALSE)
     cat("nr rows merged file: ", nrow(summary.m2), "\n")
     return(summary.m2)
@@ -42,7 +42,7 @@ process_dataset_eQTL <- function(coloc_path, dataset, regions.file, tophit.file)
     inc.cols <- c("rsID","trait", "Name", "sumstats_2_max_nlog10P", "PP.H4.abf")
     inc.cols2 <- c("_Tissue", "_gene_id", "_gene_type", "_gene_name", "_cis_trans")
     print(dataset)
-    data <- merge_coloc_sentinel(coloc_path, dataset, regions.file, tophit.file)
+    data <- merge_coloc_lead(coloc_path, dataset, regions.file, tophit.file)
     if(nrow(data>0)){
         data$trait=dataset
         #data$rsID <- paste(data$chr, data$position, sep = ":")
@@ -64,7 +64,7 @@ process_dataset_eQTL <- function(coloc_path, dataset, regions.file, tophit.file)
 process_dataset_pQTL <- function(coloc_path, dataset, regions.file, tophit.file) {
     inc.cols <- c("rsID", "trait", "Name", "sumstats_2_max_nlog10P", "PP.H4.abf")
     inc.cols2 <- c("_cis_trans")
-    data <- merge_coloc_sentinel(coloc_path, dataset, regions.file, tophit.file)
+    data <- merge_coloc_lead(coloc_path, dataset, regions.file, tophit.file)
     if(nrow(data>0)){
         data$trait=dataset
         data$Name <- paste(data$CHR_var, data$snpPOS, sep = ":")
@@ -96,7 +96,7 @@ process_dataset_pQTL <- function(coloc_path, dataset, regions.file, tophit.file)
 
 # eQTL
 inc.datasets_eQTL <- eQTL_datasets_coloc
-out.txt_eQTL <- paste0(coloc_path, "input_Progem_eQTL.txt")
+out.txt_eQTL <- paste0(coloc_path, "input_Anno_eQTL.txt")
 out.df_eQTL <- data.frame()
 
 for (dataset in inc.datasets_eQTL) {
@@ -110,7 +110,7 @@ print(out.txt_eQTL)
 
 # pQTL
 inc.datasets_pQTL <- pQTL_datasets_coloc
-out.txt_pQTL <- paste0(coloc_path, "input_Progem_pQTL.txt")
+out.txt_pQTL <- paste0(coloc_path, "input_Anno_pQTL.txt")
 out.df_pQTL <- data.frame()
 
 for (dataset in inc.datasets_pQTL) {

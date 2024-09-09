@@ -14,6 +14,9 @@ suppressMessages(library(readxl))
 suppressMessages(library(dplyr))
 suppressMessages(library(optparse))
 suppressMessages(library(data.table))
+library(parallel)
+library(Rmpfr)
+
 devtools::load_all("/data/programs/pipelines/genepicoloc/genepicoloc_package")
 sapply(list.files("/data/programs/pipelines/genepicoloc/custom_scripts/source", full.names = T), source)
 
@@ -28,11 +31,28 @@ opt = parse_args(OptionParser(option_list=option_list))
 
 #####################################
 # load input file
-sumstats <- read.table(opt$GWAS, header=T)
-#input_GWAS="/data/studies/00_GCKD/01_analyses/gwas/multi_biomarker_GWAS/common_chip/21_VAE/02_output/modules/ME30_ext_residuals/unadjusted/GCKD_Common_Clean_dedup.gwas"
-#sumstats <- read.table(input_GWAS, header=T)
-sumstats$pval=as.numeric(sumstats$pval)
-sumstats$nlog10_p= -log10(sumstats$pval)
+# load input file
+sumstats <- read.table(opt$GWAS, header=T,colClasses = "character")
+#sumstats <- read.table("/data/studies/00_GCKD/01_analyses/gwas/multi_biomarker_GWAS/common_chip/21_VAE/02_output/modules/ME30_ext_residuals/unadjusted/GCKD_Common_Clean_dedup.gwas", header=T)
+sumstats$nlog10 <- -log10(as.numeric(sumstats$pval))
+
+#Recalculate -log10 for small p-values (< 1e-300) using mpfr in parallel
+threshold <- 1e-300
+small_pvals <- which(as.numeric(sumstats$pval) < threshold)
+length(small_pvals)
+
+num_cores <- detectCores() - 1
+# Perform mpfr-based -log10 calculation for small p-values
+mpfr_results <- unlist(mclapply(sumstats$pval[small_pvals], function(x) {
+  p_val_mpfr <- mpfr(x, precBits = 300)
+  log_val <- -log10(p_val_mpfr)
+  as.numeric(log_val)  # Convert mpfr result to numeric!!!!
+}, mc.cores = num_cores))
+sumstats$nlog10[small_pvals] <- mpfr_results
+sumstats$nlog10 <- round(sumstats$nlog10, 3) #Round results
+
+sumstats[which.max(sumstats$nlog10), ]
+
 
 cat("number of SNPs orginal file", nrow(sumstats))
 print("head gwas")
@@ -43,9 +63,12 @@ if(genome_build=="hg37"){
     cat("\n## LiftOver sumstats to hg38 (using genepi_liftOver function) ##  \n")
     sumstats_liftOver <- genepi_liftOver(sumstats, CHR_name = "chr", POS_name ="position", A1_name= "coded_all", A2_name= "noncoded_all",
                                 liftOver_bin = "/scratch/global/martins/liftover/liftOver", liftOver_chain_hg19ToHg38 = "/scratch/global/martins/liftover/hg19ToHg38.over.chain.gz", dbSNP_file="/data/public_resources/Ensembl_human_variation_b38_v109/dbSNP_v156_b38p14_rsid.vcf.gz", tabix_bin="tabix",
-                                unique_ID_name="unique_ID",
                                 mc_cores=4, keep_lower=F, do_soring=T, rm_tmp_liftOver=T)
    print(head(sumstats_liftOver))
+   sumstats_liftOver$beta <- as.numeric(sumstats_liftOver$beta)
+   sumstats_liftOver$SE <- as.numeric(sumstats_liftOver$SE)  
+   sumstats_liftOver$nlog10 <- as.numeric(sumstats_liftOver$nlog10)
+   sumstats_liftOver$POS_hg38 <- as.numeric(sumstats_liftOver$POS_hg38)
    
    sumstats_1 <- read_sumstats(sumstats_liftOver,
                                Name="Name_hg38",
@@ -56,7 +79,7 @@ if(genome_build=="hg37"){
                                A2 = "noncoded_all", #re-check
                                BETA = "beta",
                                SE = "SE",
-                               nlog10p_value = "nlog10_p",
+                               nlog10p_value = "nlog10",
                                AF = "AF_coded_all")
   sumstats_1$N=unique(sumstats$n_total) #N is needed for magma input
   #### save hg38 file
@@ -75,18 +98,4 @@ if(genome_build=="hg37"){
 
 }else{
     #TO DO:
-    #sumstats$Name <- paste(sumstats$CHROM, sumstats$GENPOS, sumstats$ALLELE1, sumstats$ALLELE0, sep = ":")
-    #sumstats_1 <- read_sumstats(sumstats,
-    #                            Name="Name",
-     #                           rsID = "ID",
-    #                            CHR = "CHROM",
-    #                            POS = "GENPOS",
-    #                            A1 = "ALLELE0", #re-check
-    #                            A2 = "ALLELE1", #re-check
-     #                           BETA = "BETA",
-    #                            SE = "SE",
-    #                            nlog10p_value = "LOG10P",
-    #                            AF = "A1FREQ")
-    #sumstats_1$N=sumstats$N #N is needed for magma input
-    #saveRDS(sumstats_1, paste0(opt$output_path, "_hg38.RDS"))
 }
