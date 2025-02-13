@@ -29,13 +29,23 @@ cat(paste0(nrow(regions)), " loci identified \n")
 
 regions_log <- regions_list$regions_log
 sumstats_filt <- regions_list$sumstats_filt
-head(sumstats_filt)
-#sumstats_filt <- subset_sumstats(sumstats, regions)
-# Save
-writeLines(regions_log, con = paste0(output_path, "_get_coloc_regions_log.txt"))
-saveRDS(sumstats_filt, paste0(output_path, "_subset.RDS")) #not needed?
+#head(sumstats_filt)
 
-save_coloc_regions(regions_list, output_path, sumstats_1_type=sumstats_type)
+# Save log and filtered summary statistics
+writeLines(regions_log, con = paste0(output_path, "_get_coloc_regions_log.txt"))
+saveRDS(sumstats_filt, paste0(output_path, "_subset.RDS"))
+
+#Following code substitute:
+#save_coloc_regions(regions_list, output_path, sumstats_1_type=sumstats_type)
+write.table(regions, paste0(output_path, "_coloc_regions_PASS.tsv"),
+            sep = "\t", row.names = FALSE, col.names = TRUE, quote = FALSE)
+
+write.table(sumstats_filt, paste0(output_path, "_subset.tsv"),
+            sep = "\t", row.names = FALSE, col.names = TRUE, quote = FALSE)
+
+system(paste0("bgzip -f ", output_path, "_subset.tsv"))
+system(paste0("tabix -f -s3 -b4 -e4 ", output_path, "_subset.tsv.gz -c Name"))
+##
 
 saveRDS(regions_list, paste0(output_path, "_coloc_regions.RDS"))
 
@@ -46,9 +56,6 @@ cat("\n## Creating lead file ## \n")
 tophit=regions
 
 tophit$strand <- "+"
-#tophit$rsID <- paste(tophit$CHROM, tophit$POS, sep = ":")
-
-#tophit$allele <- paste(tophit$A1, tophit$A2, sep = "/")
 
 # If theres no rsID, create "chr:start" annotation
 tophit<- tophit %>%

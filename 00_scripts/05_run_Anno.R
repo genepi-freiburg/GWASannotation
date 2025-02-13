@@ -241,7 +241,9 @@ anno_summary <- cbind(anno_summary, COLOC_EQTL_annotations)
 
 cat("\t- Coloc eQTL information have been integrated.\n")
 
-if(!is.na(tissues_interest)){
+if (all(tissues_interest != "NA")) {
+    print("eQTL tissues of interest for coloc")
+    print(tissues_interest)
     #create a data.frame with tissues of interest
     coloc_eqtl_tissue_interest  <- coloc_eqtl_data[which(coloc_eqtl_data$Tissue %in% tissues_interest),]
     # formatting so that it can be added to the bottom-up summary

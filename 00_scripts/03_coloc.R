@@ -5,43 +5,27 @@ cat("Colocalization analysis \n")
 file <- paste0(output_path, "_subset.tsv.gz")
 #files <- "/data/programs/pipelines/GWASannotation/02_output/test/test_subset.txt.gz"
 regions <- paste0(output_path, "_coloc_regions.RDS")
-sumstats_1_type  <- sumstats_type
 
 folder_path <- dirname(output_path)
 folder_path <- paste0(folder_path, "/coloc")
 dir.create(folder_path)
 setwd(folder_path)
 
-# Run colocs
-#cat("check R environment \n")
-#print(Sys.getenv())
-
-####################################
 regions <- readRDS(regions)
 
-sumstats_1_args <- data.frame(sumstats_1_file = file,
-                              sumstats_1_function = "query_sumstats_1",
-                              sumstats_1_type = sumstats_1_type,
-                              sumstats_1_sdY = NA)
-sumstats_1_args <- data.frame(sumstats_1_args, regions[["coloc_regions_PASS"]])
-
-## ---- echo=T, eval = T--------------------------------------------------------
-#selected_studies <- c("ARIC_pGWAS", "GTEXv8", "Icelanders_pGWAS", "Kidney_eQTL", "UKB_PPP_EUR")
-selected_studies <- datasets_coloc
+#Colocalization module
+args_list_selected <- args_list_wrapper(region_args=regions$coloc_regions_PASS,
+                                        sumstats_1_file=file,
+                                        sumstats_1_type=sumstats_type,
+                                        sumstats_1_sdY=NA,
+                                        selected_studies=datasets_coloc)
+print("Datasets that will be used for colocalization analysis: ")
 print(datasets_coloc)
-#cat("coloc datasets: ", selected_studies, "\n")
-list_to_create_args <- list_to_create_args_list[selected_studies]
-list_of_args <- lapply(list_to_create_args, function(x) {
-  do.call(create_coloc_params_df,
-          c(x, list(sumstats_1_args = sumstats_1_args)))
-})
-str(list_of_args, 1)
 
-##############
-coloc_out <- Map(parallel_wrapper, list_of_args, dry_run = F, N_cpus_per_node = 10) 
+coloc_out_all <- coloc_out_wrapper(args_list_selected, output_folder = "output", mc_cores=10)
+# change number of cores with mc_cores
+# use debug_mode=T for debugging
 
-summarize_coloc(selected_studies=selected_studies,
-                output_folder = "output",
-                remove_dirname = F)
+coloc_out_all_annot <- coloc_out_annotate(coloc_out_all, output_folder = "output")
+coloc_out_summary(coloc_out_all_annot, output_folder = "output")
 
-#
