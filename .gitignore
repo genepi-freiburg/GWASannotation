@@ -1,3 +1,12 @@
 # Ignore macOS system files
 .DS_Store
 ._*
+.*
+*._*
+*.R*
+
+#Ignore folders
+02_output/
+05_internal/
+03_logs/
+99_archive/
