@@ -89,7 +89,6 @@ print(datasets_coloc)
 #tissues of interest - needs a couple of CHECKS!!!!
 #eQTL_tissues_interest_coloc <- c("Kidney_Cortex", "Liver", "Whole_Blood", "Kidney_eQTL.TubsigeQTLs", "Kidney_eQTL.GlomsigeQTLs", "Kidney_eQTL_Meta_S686_Significant.q0.01", "CXTubsigeQTLs", "CXGlomsigeQTLs") ###################
 tissues_interest <- unlist(strsplit(opt$eQTL_tissues_interest_coloc, ","))
-#tissues_interest <- eQTL_tissues_interest_coloc
 
 if(is.na(opt$coloc_input_path)){
     coloc_path <- paste0(folder_path, "/coloc/output/")   
@@ -97,7 +96,7 @@ if(is.na(opt$coloc_input_path)){
     files <- list.files(opt$coloc_input_path, pattern = "\\.RDS$")
     files <- files[!grepl("summary\\.RDS$", files)]
 
-    if (all(paste0(datasets_coloc, ".RDS") %in% files)) {
+    if (all(paste0(datasets_coloc, "_annot_unfilt.RDS") %in% files)) {
       cat("Coloc folder provided contains all selected QTL datasets \n")
     } else {
       cat("Coloc folder provided does not contain the selected QTL datasets \n")
@@ -140,7 +139,7 @@ IMPACT_column <- 14
 
 # Tissue(s) of interest for GTEx eQTL data set:
 GTEx_tissues <- dir(eQTLdata_dir)[grep("signif_variant_gene_pairs", dir(eQTLdata_dir))]
-tissues_of_interest <- GTEx_tissues     # all tissues.
+tissues_eQTL_associations <- GTEx_tissues[1:2]     # all tissues.
 
 # Column indices and threshold in the COLOC eQTL file
 coloc_eqtl_lead_rsID_col <- 1
@@ -150,12 +149,25 @@ coloc_eqtl_ensembl_gene_id_col <- 7
 eqtl_tissue_col <- 6
 
 # Only these tissues will be considered for eQTL_tissues_interest_coloc
-# Reformat the tissues_of_interest from GTEx eQTL lookup above and include
-tissues_of_interest.short <-sub(pattern=".v8.signif_variant_gene_pairs.txt.gz",
+# Reformat the tissues_eQTL_associations from GTEx eQTL lookup above and include
+tissues_interest.short <-sub(pattern=".v8.signif_variant_gene_pairs.txt.gz",
                                 replacement="", x=GTEx_tissues, fixed=TRUE)
-eqtl_tissues_of_interest <- c(tissues_of_interest.short,
+eqtl_tissues_of_interest <- c(tissues_interest.short,
                               "Kidney_eQTL.GlomsigeQTLs", "Kidney_eQTL_Meta_S686_Significant.q0.01",
-                              "Kidney_eQTL.TubsigeQTLs")
+                              "Kidney_eQTL.TubsigeQTLs", "CXTubsigeQTLs", "CXGlomsigeQTLs","eQTLGen_blood")
+
+#Check if eQTL_tissues_interest_coloc selected exist in the database
+if (all(is.na(tissues_interest))) {
+    cat("No tissues selected (NA detected)\n")
+} else if (all(tissues_interest %in% eqtl_tissues_of_interest)) {
+    cat("Valid tissue selection:\n")
+    print(tissues_interest)
+} else {
+    cat("--eQTL_tissues_interest_coloc selection is not valid \n")
+    cat("Available eQTL_tissues_interest_coloc are:", paste(eqtl_tissues_of_interest, collapse = ", "), "\n")
+    stop("Aborting pipeline due to eQTL_tissues_interest_coloc selection")
+}
+
 
 eqtl_sumstats_2_max_nlog10P_col <- 4
 # If set, sumstats_2_max_nlog10P will be filtered for > this threshold
@@ -179,7 +191,7 @@ pqtl_cis_trans_col <- 7
 pqtl_cis_trans_sel <- c("cis")
 
 #------------------------------------------------------------------------------------------------------
-## 4. EXECUTE ALL
+# 4. EXECUTE ALL
 
 cat("##################################################\n######## STEP1: Performing pre-processing ########\n ################################################## \n")
 start_time1 <- Sys.time()

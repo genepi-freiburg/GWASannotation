@@ -96,7 +96,7 @@ cat(paste("\t- The ", number_of_nearest, " genes nearest to each lead have been 
 cat("\t- Searching for cis-eQTL targets...\n")
 
 # search cis-eQTL files (NOTE: will take approx 10-15 minutes if all tissues have been chosen)
-cis_eQTL_hits <- cis_eQTL_target_finder(eQTLdata_dir, tissues_of_interest, lead_data, proxy_data)
+cis_eQTL_hits <- cis_eQTL_target_finder(eQTLdata_dir, tissues_eQTL_associations, lead_data, proxy_data)
 print(cis_eQTL_hits)
 
 # format the cis_eQTL_hits list; i.e., add rsids and remove .* from ensembl_ids
@@ -241,7 +241,7 @@ anno_summary <- cbind(anno_summary, COLOC_EQTL_annotations)
 
 cat("\t- Coloc eQTL information have been integrated.\n")
 
-if (all(tissues_interest != "NA")) {
+if (any(!is.na(tissues_interest))){
     print("eQTL tissues of interest for coloc")
     print(tissues_interest)
     #create a data.frame with tissues of interest
@@ -249,7 +249,10 @@ if (all(tissues_interest != "NA")) {
     # formatting so that it can be added to the bottom-up summary
     COLOC_EQTL_tissues_int_annotations <- COLOC_integrator(lead_data, anno_summary, coloc_eqtl_tissue_interest, coloc_eqtl_lead_rsID_col,
                                              coloc_eqtl_ensembl_gene_id_col, QTL_type = "eQTL_tissues_interest")
-
+    
+    write.table(coloc_eqtl_tissue_interest, file = file.path(output_dir, "coloc_eqtl_tissue_interest.txt"),
+                                                                                                  quote = FALSE, row.names = FALSE, sep = "\t")
+    
     # combine anno_summary with the COLOC EQTL annotation
     anno_summary <- cbind(anno_summary, COLOC_EQTL_tissues_int_annotations)
 
@@ -329,10 +332,10 @@ write.table(VEP_annotations, file = file.path(output_dir, "OUTPUT_VEP_IMPACT_ann
             quote = FALSE, row.names = FALSE, sep = "\t")
 
 # coloc_eQTL
-write.table(COLOC_EQTL_annotations, file = file.path(output_dir, "OUTPUT_COLOC_EQTL_annotations.txt"),
+write.table(coloc_eqtl_data, file = file.path(output_dir, "OUTPUT_COLOC_EQTL.txt"),
             quote = FALSE, row.names = FALSE, sep = "\t")
 # coloc_pQTL
-write.table(COLOC_PQTL_annotations, file = file.path(output_dir, "OUTPUT_COLOC_PQTL_annotations.txt"),
+write.table(coloc_pqtl_data, file = file.path(output_dir, "OUTPUT_COLOC_PQTL.txt"),
             quote = FALSE, row.names = FALSE, sep = "\t")
 
 # lead eQTLs

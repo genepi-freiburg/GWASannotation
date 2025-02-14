@@ -42,6 +42,7 @@ process_dataset_eQTL <- function(coloc_path, dataset, regions.file, tophit.file)
     inc.cols <- c("rsID","trait", "Name", "sumstats_2_max_nlog10P", "PP.H4.abf")
     inc.cols2 <- c("_Tissue", "_gene_id", "_gene_type", "_gene_name", "_cis_trans")
     print(dataset)
+    
     data <- merge_coloc_lead(coloc_path, dataset, regions.file, tophit.file)
     if(nrow(data>0)){
         data$trait=dataset
@@ -57,6 +58,10 @@ process_dataset_eQTL <- function(coloc_path, dataset, regions.file, tophit.file)
         data <- data[data$cis_trans =="cis", ]
         data <- data[complete.cases(data$gene_id), ]
         print(dim(data))
+        # Modify "_Tissue" column for eQTLGen dataset
+        if (dataset == "eQTLGen_Tissue") {
+            data$Tissue <- "eQTLGen_blood"
+        }
         return(data)
     }
 }

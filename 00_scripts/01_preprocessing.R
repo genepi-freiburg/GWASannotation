@@ -147,12 +147,11 @@ write.table(proxy_data, file= paste0(output_path, "_proxies.txt"), quote = FALSE
 
 vep_data <- ld_results[,c("CHR_B", "BP_B", "END", "allele", "strand", "SNP_B")]
 cat("head vep input file \n")
-head(vep_data)
+print(head(vep_data))
 #vep <- separate(vep, Allele, into = c("ref", "alt"), sep = "/")
-
 
 write.table(vep_data, file = paste0(output_path, "_proxies_vep.txt"), quote = FALSE, sep = "\t",
         row.names = FALSE, col.names = FALSE)
 
 
-cat("\n## Pre-processing finished ##\n")
+#cat("\n## Pre-processing finished ##\n")
