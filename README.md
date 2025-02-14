@@ -17,6 +17,8 @@ This annotation pipeline integrates multiple lines of evidence, building upon an
   
 _*INTERNAL: The pipeline works with my version of R. Feel free to use it: /scratch/global/martins/R-4.4.1/bin/R_
 
+**Analysis will be conducted in hg38!** 
+
 ### GWASAnno_main.R parameters: 
 | Column | Description |
 | --- | --- |
@@ -54,9 +56,24 @@ _*INTERNAL: The pipeline works with my version of R. Feel free to use it: /scrat
 | AF | frequency of A1 |
 | N | sample size |
 
-_*INTERNAL: some scripts can be found on 05_internal/ that can be used to help create the input file for GWASannotation pipeline. However, these step is not part of the pipeline! Make sure your input file for --GWAS_RDS fits the description_
+_*INTERNAL: some scripts can be found on 05_internal/ that can be used to help create the input file for GWASannotation pipeline. However, these step is not part of the pipeline! Make sure your input file for --GWAS_RDS fits the description_  
+_**Before running the pipeline check if your GWAS$Name overlaps the Names from the colocalization datasets**_
+<pre> 
+  c <- data.table::fread("/data/public_resources/CKDGen/preprocessing/Wuttke2019/CKD_overall_ALL_JW_20180223_nstud30.dbgap.txt_hg38.gz")
+  sumstats <- readRDS("/path/to/sumstats_hg38_dedup.RDS")
+  length(unique(sumstats$Name))
+  #Intersection between sumstats and coloc
+  int <- sumstats[which(sumstats$Name %in% c$Name_hg38),]
+  length(unique(int$Name))
 
-**Analysis will be conducted in hg38!** 
+  #check with inverted allele order
+  split_data <- do.call(rbind, strsplit(sumstats$rsID, ":"))
+  sumstats$A1 <- split_data[, 3]
+  sumstats$A2 <- split_data[, 4]
+  sumstats$Name_inv <- paste0("chr",sumstats$CHR,":", sumstats$POS,":", sumstats$A2,":", sumstats$A1)
+  int_inv <- sumstats[which(sumstats$Name_inv %in% c$Name_hg38),]
+  length(unique(int_inv$Name))
+</pre>
 
 ### Post processing - scoring system:
 *The script 00_scripts/06_postprocessing.R can be used with the following options in case an alternative scoring is desired  
