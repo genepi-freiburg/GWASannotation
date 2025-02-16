@@ -139,7 +139,7 @@ IMPACT_column <- 14
 
 # Tissue(s) of interest for GTEx eQTL data set:
 GTEx_tissues <- dir(eQTLdata_dir)[grep("signif_variant_gene_pairs", dir(eQTLdata_dir))]
-tissues_eQTL_associations <- GTEx_tissues[1:2]     # all tissues.
+tissues_eQTL_associations <- GTEx_tissues     # all tissues.
 
 # Column indices and threshold in the COLOC eQTL file
 coloc_eqtl_lead_rsID_col <- 1
