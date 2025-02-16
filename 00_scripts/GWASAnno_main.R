@@ -250,7 +250,7 @@ if (is.na(opt$coloc_input_path)){
     coloc_path <- opt$coloc_input_path
 }
 
-if (file.exists(paste0(coloc_path,"/",datasets_coloc[1], "_unfilt.RDS"))) {
+if (file.exists(paste0(coloc_path,"/",datasets_coloc[1], "_annot_unfilt.RDS"))) {
     cat("########################################################\n###### STEP4: Prepare coloc QTL results for Annotation ###### \n######################################################## \n")
     start_time6 <- Sys.time()
     source(paste0(script_path,"/04_prepare_QTL.R"))
