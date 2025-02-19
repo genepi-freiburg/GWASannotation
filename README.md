@@ -26,12 +26,12 @@ _*INTERNAL: The pipeline works with my version of R. Feel free to use it: /scrat
 | --output_path | Complete directory path, including output file prefix [required] |
 | --sumstats_type | GWAS summary type: quant or cc (default=quant) |
 | --GWAS_max_nlog10P_thresh |GWAS summary statistics will be filtered for > this threshold  (default=-log10(5e-8)) |
-| --bfile | Plink bfile (bed, bim, fam) to use for selecting proxies (if not provided UKB_14K_hg38 will be used) |
+| --bfile | Plink bfile (bed, bim, fam) to use as LDref for selecting proxies (if not provided UKB_14K_hg38 will be used) |
 | --r2_thresh | Threshold for r2 values (default=0.8)
 | --eQTL_datasets_coloc | Comma-separated eQTL datasets to use for coloc. Possible options: GTEXv8, eQTLGen, Kidney_eQTL (default=GTEXv8)
 | --eQTL_tissues_interest_coloc | Comma-separated tissues of interest to be selected from the eQTL datasets -check 04_utils/tissues_eQTL.txt (default=NA)
 | --pQTL_datasets_coloc | Comma-separated pQTL datasets to use for coloc. Possible datasets: Icelanders_pGWAS,UKB_PPP_EUR (default=c('Icelanders_pGWAS','UKB_PPP_EUR')
-| --coloc_input_path | Path with coloc results for the selected databases (default=NA and runs coloc analysis)
+| --coloc_input_path | Path with coloc results for the selected datasets (default=NA and runs coloc analysis)
 | --QTL_coloc_max_nlog10P_thresh | eQTL and pQTL datasets used for colocalization will be filtered for > this threshold  (default=-log10(5e-8))
 | --PP.H4.abf_thresh | PP.H4.abf will be filtered for > this threshold (default=0.8)
 | --interval_kb | Genomic interval (in kb) either side of the sentinel SNP, used to define genes nearby the index SNP (nearest genes) (default=500)
@@ -44,8 +44,8 @@ _*INTERNAL: The pipeline works with my version of R. Feel free to use it: /scrat
 
 | Column | Description |
 | -- | --- |
-| Name | CHR:POS:A2:A1 (example: *chr1:10177:A:AC*) |
-| rsID |  Variant identifier that will be shown on the output (in concordance with the LDref)  (example *rs367896724*) |
+| Name | CHR:POS:REF:ALT (fixed format to match the variant identifier in coloc datasets; example: *chr1:10177:A:AC*) |
+| rsID |  Variant identifier that will be shown on the output (need to be in concordance with the LDref Plink bfile; example *rs367896724*) |
 | CHR | chromosome number (example: *1*) |
 | POS | SNP position (example: *10177*) |
 | A1 | alternative/ effect allele (example: *AC*) |
