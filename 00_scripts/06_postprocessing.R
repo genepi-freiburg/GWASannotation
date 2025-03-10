@@ -224,7 +224,7 @@ if(nrow(anno)>0){
        #   group_by(count) %>%
        #   arrange(factor(evidences, levels = custom_order))
         
-       # genes.df <- genes.df[order(genes.df$count, decreasing = TRUE), ]
+        genes.df <- genes.df[order(genes.df$count, decreasing = TRUE), ]
         # Print the resulting dataframe
         #print(genes.df)
         
