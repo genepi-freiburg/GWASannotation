@@ -85,7 +85,11 @@ nearest_genes_selector <- function(local_gene_ranges, annotation, biotype, numbe
     )
   
   annotation <- annotation[which(annotation$gene_biotype %in% biotype),]
+  print("annotation _ nearest_genes_selector")
+  print(annotation)
   unique_lead <- unique(mcols(local_gene_ranges)[[1]])
+  print("unique_lead")
+  print(unique_lead)
   for(i in 1:length(unique_lead)) {
     temp <- local_gene_ranges[which(mcols(local_gene_ranges)[[1]] == unique_lead[i])]
     temp <- temp[which(names(temp) %in% annotation$ensembl_gene_id)]

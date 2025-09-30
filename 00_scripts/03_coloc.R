@@ -3,7 +3,6 @@
 # Set parameters
 cat("Colocalization analysis \n")
 file <- paste0(output_path, "_subset.tsv.gz")
-#files <- "/data/programs/pipelines/GWASannotation/02_output/test/test_subset.txt.gz"
 regions <- paste0(output_path, "_coloc_regions.RDS")
 
 folder_path <- dirname(output_path)

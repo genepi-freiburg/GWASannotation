@@ -1,3 +1,5 @@
+#update July 2025 - add chr x
+
 ### IMPORT RELEVANT PACKAGES
 library(GenomicAlignments)
 library(GenomicFeatures)
@@ -10,7 +12,7 @@ library(writexl)
 library(dplyr)
 library(biomaRt)
 
-devtools::load_all("/data/programs/pipelines/genepicoloc/genepicoloc_package")
+devtools::load_all("/data/programs/pipelines/genepicoloc/source_package/genepicolocGWASAnnotation")
 
 suppressMessages(library(optparse))
 cat("\nImported required packages.\n")

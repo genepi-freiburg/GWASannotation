@@ -8,10 +8,14 @@ lead_data <- data.table(read.table(file = file.path(lead_filename), header = TRU
                                        quote = NULL, sep = "\t",
                                        colClasses = c("character", "character", "numeric", "numeric")))
 lead_data=unique(lead_data)
+#convert CHR 23 into X
+lead_data$CHR[lead_data$CHR == "23"] <- "X"
+
 proxy_data <- data.table(read.table(file = file.path(proxy_filename), header = TRUE,
                                     quote = NULL, sep = "\t", stringsAsFactors = FALSE,
                                     colClasses = c("character", "character", "numeric", "numeric",
                                                    "character", "numeric")))
+proxy_data$CHR[proxy_data$CHR == "23"] <- "X"
 
 
 #remove the lead from the proxy_data dataset
@@ -84,8 +88,8 @@ cat("\t- Genes overlapping an LD region have been identified.\n")
 
 nearest_genes <- nearest_genes_selector(local_genes, local_genes_annotation, biotype_of_interest, 
                                         number_of_nearest)
-#print("nearest_genes")
-#print(head(nearest_genes))
+print("nearest_genes")
+print(head(nearest_genes))
 
 cat(paste("\t- The ", number_of_nearest, " genes nearest to each lead have been identified.\n",
           sep = ""))

@@ -15,12 +15,35 @@ sumstats <- readRDS(GWAS_RDS)
 
 print("head gwas")
 head(sumstats)
+table(sumstats$Name == sumstats$rsID)
 
+#To make sure that name match the coloc datasets names
+sumstats_name <- Name_by_position(sumstats=sumstats,
+                                   CHR_name="CHR",
+                                   POS_name="POS",
+                                   A1_name="A1",
+                                   A2_name="A2",
+                                   tabix_bin="tabix",
+                                   dbSNP_file="/data/public_resources/Ensembl_human_variation_b38_v109/dbSNP_v156_b38p14_rsid.vcf.gz")
+
+
+table(sumstats_name$Name == sumstats_name$Name_hg38)
+length(unique(sumstats_name$Name_hg38))
+
+dim(sumstats_name[duplicated(sumstats_name$Name_hg38)])
+setDT(sumstats_name)
+sumstats[sumstats_name, on = "rsID", Name := i.Name_hg38]
+dim(sumstats[duplicated(sumstats$Name)])
+sumstats <- sumstats %>%
+  group_by(Name) %>%
+  slice(which.max(nlog10P)) %>%
+  ungroup()
+print("Name == rsID")
+table(sumstats$Name == sumstats$rsID)
 
 #####################################
 # loci regions - using function from coloc
 cat("\n## Defining significant loci (regions around 500kb of the lead SNP) ##  \n")
-
 regions_list <- get_coloc_regions(sumstats, nlogP_threshold = GWAS_max_nlog10P_thresh, halfwindow = 500000)
 
 regions <- regions_list$coloc_regions
@@ -52,7 +75,7 @@ saveRDS(regions_list, paste0(output_path, "_coloc_regions.RDS"))
 #####################################
 # lead file
 cat("\n## Creating lead file ## \n")
-#3.1. A tab-separated .txt file containing rsIDs, chromosomes, and GRCh37 coordinates (both start and end) of your lead variants of interest across four columns with the below column names. In cases where there is no rsID for a lead variant then the notation "chr:start" should be used (i.e., 1:11856378).
+#3.1. A tab-separated .txt file containing rsIDs, chromosomes, and GRCh38 coordinates (both start and end) of your lead variants of interest across four columns with the below column names. In cases where there is no rsID for a lead variant then the notation "chr:start" should be used (i.e., 1:11856378).
 tophit=regions
 
 tophit$strand <- "+"
@@ -134,6 +157,7 @@ print(head(proxy_data))
 write.table(proxy_data, file= paste0(output_path, "_proxies.txt"), quote = FALSE, sep = "\t",
     row.names = FALSE, col.names = TRUE)
 
+
 #FOR VEP ANALYSIS NEED TO CHECK ALLELE POSITION BASED ON dbSNP - use
 #Name_by_position(sumstats, tmp_name=NULL,CHR_name="CHR_hg38", POS_name="POS_hg38",A1_name="A1_hg38", A2_name="A2_hg38",Name_out="Name_hg38", rs_name="rs",unique_ID_name="unique_ID",tabix_bin, dbSNP_file,do_soring=T, mc_cores=4)
 
@@ -146,6 +170,9 @@ write.table(proxy_data, file= paste0(output_path, "_proxies.txt"), quote = FALSE
 #ld_results2$allele <- paste(ld_results2$ref, ld_results2$alt, sep = "/") #A2 is reference
 
 vep_data <- ld_results[,c("CHR_B", "BP_B", "END", "allele", "strand", "SNP_B")]
+##!VEP used "X" instead of "23"
+vep_data$CHR_B[vep_data$CHR_B == "23"] <- "X"
+
 cat("head vep input file \n")
 print(head(vep_data))
 #vep <- separate(vep, Allele, into = c("ref", "alt"), sep = "/")
