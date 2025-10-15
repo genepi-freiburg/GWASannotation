@@ -1,5 +1,3 @@
-#devtools::load_all("/data/programs/pipelines/genepicoloc/genepicoloc_package")
-
 # Set parameters
 cat("Colocalization analysis \n")
 file <- paste0(output_path, "_subset.tsv.gz")
