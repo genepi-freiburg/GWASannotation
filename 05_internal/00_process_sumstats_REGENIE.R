@@ -32,14 +32,11 @@ sumstats <- data.table::fread(opt$GWAS)
 cat("number of SNPs orginal file", nrow(sumstats))
 print("head gwas")
 head(sumstats)
-sumstats$pval=as.numeric(sumstats$pval)
-sumstats$nlog10_p= -log10(sumstats$pval)
-
 genome_build=opt$genome_build  #add as parameter
 cat("genome build: ", genome_build,  "\n")
 if(genome_build=="hg37"){
     cat("\n## LiftOver sumstats to hg38 (using genepi_liftOver function) ##  \n")
-    sumstats_liftOver <- genepi_liftOver(sumstats, CHR_name = "chr", POS_name ="position", A1_name= "coded_all", A2_name= "noncoded_all",
+    sumstats_liftOver <- genepi_liftOver(sumstats, CHR_name = "CHROM", POS_name ="GENPOS", A1_name= "ALLELE0", A2_name= "ALLELE1",
                                 liftOver_bin = "/scratch/global/martins/liftover/liftOver", liftOver_chain_hg19ToHg38 = "/scratch/global/martins/liftover/hg19ToHg38.over.chain.gz", dbSNP_file="/data/public_resources/Ensembl_human_variation_b38_v109/dbSNP_v156_b38p14_rsid.vcf.gz", tabix_bin="tabix",
                                 unique_ID_name="unique_ID",
                                 mc_cores=4, keep_lower=F, do_soring=T, rm_tmp_liftOver=T)
@@ -72,26 +69,18 @@ if(genome_build=="hg37"){
   saveRDS(unique_rows, paste0(opt$output_path, "_liftOver_hg38_dedup.RDS"))
 
 }else{
-sumstats_1 <- read_sumstats(sumstats,
-                            Name="SNP",
-                            rsID = "SNP",
-                            CHR = "chr",
-                            POS = "position",
-                            A1 = "coded_all", #re-check
-                            A2 = "noncoded_all", #re-check
-                            BETA = "beta",
-                            SE = "SE",
-                            nlog10p_value = "nlog10_p",
-                            AF = "AF_coded_all")
-sumstats_1$N=sumstats$n_total #N is needed for magma input
-colnames(sumstats_1)[2]
-colnames(sumstats_1)[2] <- "rsID"
-unique_rows <- sumstats_1 %>%
-  group_by(Name) %>%
-  slice(which.max(nlog10P)) %>%
-  ungroup()
-cat("number of SNPs after removing duplicated 'Name'", nrow(unique_rows))
-
-saveRDS(sumstats_1, paste0(opt$output_path, "_hg38.RDS"))
-saveRDS(unique_rows, paste0(opt$output_path, "_hg38_dedup.RDS"))
+    sumstats$Name <- paste(sumstats$CHROM, sumstats$GENPOS, sumstats$ALLELE1, sumstats$ALLELE0, sep = ":")
+    sumstats_1 <- read_sumstats(sumstats,
+                                Name="Name",
+                                rsID = "ID",
+                                CHR = "CHROM",
+                                POS = "GENPOS",
+                                A1 = "ALLELE0", #re-check
+                                A2 = "ALLELE1", #re-check
+                                BETA = "BETA",
+                                SE = "SE",
+                                nlog10p_value = "LOG10P",
+                                AF = "A1FREQ")
+    sumstats_1$N=sumstats$N #N is needed for magma input
+    saveRDS(sumstats_1, paste0(opt$output_path, "_hg38.RDS"))
 }

@@ -1,13 +1,6 @@
 ###############################################################
-# process the input (regneie.gz for now) and creates input files for VEP, ProGEM script and for MAGMA
-# input: GWAS.regenie.gz
-# outputs:
-#  - loci regions (function bored from coloc pipeline) - intermediate file or will we use it in the end?
-#  - sentinel file: txt file with the index SNP (top SNP) for each loci
-#  - proxy file: txt file with the snps for each loci (+/- 500kb around the index snp) ***NOTE: add parameter to decide the window
-#  - magma input
-#  - filtered regions file for coloc!
-# **** take genome version into consideration????
+# THIS IS NOT PART OF GWAS ANNOTATION PIPELINE You need to create the input file for GWASAnnotation
+# You need to create the input file for GWASAnnotation before running the pipeline. Use this code as help only
 ##################################################################
 
 suppressMessages(library(readxl))
@@ -18,7 +11,6 @@ library(parallel)
 library(Rmpfr)
 
 devtools::load_all("/data/programs/pipelines/genepicoloc/genepicoloc_package")
-sapply(list.files("/data/programs/pipelines/genepicoloc/custom_scripts/source", full.names = T), source)
 
 
 option_list = list(

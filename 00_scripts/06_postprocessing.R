@@ -28,8 +28,8 @@ tryCatch({
   folder_path <- dirname(opt$output_path)
   output_dir <- paste0(folder_path, "/GWASAnno/")
   print(output_path)
-  tissues_interest <- opt$eQTL_tissues_interest_coloc
-  
+  tissues_interest <- strsplit(opt$eQTL_tissues_interest_coloc, ",")[[1]]
+
   # Reading and processing for anno with optparse
   anno.file <- paste0(output_dir, "OUTPUT_anno_summary.txt")
   tophit.file <- paste0(opt$output_path,"_lead.txt")
@@ -76,6 +76,55 @@ anno <- read.table(anno.file, header=TRUE, sep="\t")
 anno[anno$hgnc_symbol != "-", ]
 empty_symbol <- which(anno$hgnc_symbol == "-")
 anno$hgnc_symbol[empty_symbol] <- anno$ensembl_id[empty_symbol]
+
+#If tissues_interest are selected"
+if (any(!is.na(tissues_interest))){
+    print("#check if it already exist a file with tissues_interest info: coloc_eqtl_tissue_interest")
+    if (file.exists(paste0(output_dir, "coloc_eqtl_tissue_interest.txt"))){
+        ##check if tissues_interest are the same
+        tissues_done <- read.table(paste0(output_dir, "coloc_eqtl_tissue_interest.txt"), header=T)
+        tissues_done <- unique(tissues_done$Tissue)
+        if (!all(tissues_interest %in% tissues_done)) {
+          cat("tissues of interest not found in coloc_eqtl_tissue_interest.txt - re-check. \n")
+          args <- commandArgs(trailingOnly = FALSE)
+          script_path <- sub("--file=", "", args[grep("--file=", args)])
+          script_path <- normalizePath(script_path)
+          script_path <- dirname(script_path)
+          source(file = file.path(paste0(dirname(script_path),"/04_utils/Anno_functions.R")))
+          ####create new tissues_interest
+          coloc_eqtl_data <- read.table(paste0(output_dir, "OUTPUT_COLOC_EQTL.txt"), header=T)
+          coloc_eqtl_tissue_interest  <- coloc_eqtl_data[which(coloc_eqtl_data$Tissue %in% tissues_interest),]
+          if (nrow(coloc_eqtl_tissue_interest)>0){
+              cat("Re-writing as coloc_eqtl_tissue_interest_v2.txt \n")
+              write.table(coloc_eqtl_tissue_interest, file = file.path(output_dir, "coloc_eqtl_tissue_interest_v2.txt"), quote = FALSE, row.names = FALSE, sep = "\t")
+          }
+          # formatting so that it can be added to the bottom-up summary
+          lead_data <- read.table(tophit.file, header=T)
+          COLOC_EQTL_tissues_int_annotations <- COLOC_integrator(lead_data, anno[, c("LEAD_rsID", "ensembl_id", "hgnc_symbol", "gene_biotype")], coloc_eqtl_tissue_interest, 1, 7, QTL_type = "eQTL_tissues_interest")
+          anno$coloc_eQTL_tissues_interest <- COLOC_EQTL_tissues_int_annotations$coloc_eQTL_tissues_interest
+        } else {
+            cat("tissues of interest selected \n")
+        }
+    } else {
+        cat("file with tissues_interest info doesnt exist. Creating it from OUTPUT_COLOC_EQTL (only works after Feb. 2025 update)! \n")
+        args <- commandArgs(trailingOnly = FALSE)
+        script_path <- sub("--file=", "", args[grep("--file=", args)])
+        script_path <- normalizePath(script_path)
+        script_path <- dirname(script_path)
+        source(file = file.path(paste0(dirname(script_path),"/04_utils/Anno_functions.R")))
+        ####create new tissues_interest
+        coloc_eqtl_data <- read.table(paste0(output_dir, "OUTPUT_COLOC_EQTL.txt"), header=T)
+        coloc_eqtl_tissue_interest  <- coloc_eqtl_data[which(coloc_eqtl_data$Tissue %in% tissues_interest),]
+        if (nrow(coloc_eqtl_tissue_interest)>0){
+            cat("Re-writing as coloc_eqtl_tissue_interest_v2.txt \n")
+            write.table(coloc_eqtl_tissue_interest, file = file.path(output_dir, "coloc_eqtl_tissue_interest_v2.txt"), quote = FALSE, row.names = FALSE, sep = "\t")
+        }
+        # formatting so that it can be added to the bottom-up summary
+        lead_data <- read.table(tophit.file, header=T)
+        COLOC_EQTL_tissues_int_annotations <- COLOC_integrator(lead_data, anno[, c("LEAD_rsID", "ensembl_id", "hgnc_symbol", "gene_biotype")], coloc_eqtl_tissue_interest, 1, 7, QTL_type = "eQTL_tissues_interest")
+        anno$coloc_eQTL_tissues_interest <- COLOC_EQTL_tissues_int_annotations$coloc_eQTL_tissues_interest
+    }
+}
 
 if(nrow(anno)>0){
     anno$nearest[is.na(anno$nearest)] <- 0
@@ -168,7 +217,6 @@ if(nrow(anno)>0){
         }
 
         
-        print("here")
         #custom_order <- c("nearest", "coloc_eQTL_tissues_interest" ,"coloc_eQTL", "coloc_pQTL", "LD_overlapping", "IMPACT_moderate_high")
      
         # Group by count and reorder within each group
@@ -176,7 +224,7 @@ if(nrow(anno)>0){
        #   group_by(count) %>%
        #   arrange(factor(evidences, levels = custom_order))
         
-       # genes.df <- genes.df[order(genes.df$count, decreasing = TRUE), ]
+        genes.df <- genes.df[order(genes.df$count, decreasing = TRUE), ]
         # Print the resulting dataframe
         #print(genes.df)
         

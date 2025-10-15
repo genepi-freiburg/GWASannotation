@@ -1,13 +1,6 @@
 ###############################################################
-# process the input (regneie.gz for now) and creates input files for VEP, ProGEM script and for MAGMA
-# input: GWAS.regenie.gz
-# outputs:
-#  - loci regions (function bored from coloc pipeline) - intermediate file or will we use it in the end?
-#  - sentinel file: txt file with the index SNP (top SNP) for each loci
-#  - proxy file: txt file with the snps for each loci (+/- 500kb around the index snp) ***NOTE: add parameter to decide the window
-#  - magma input
-#  - filtered regions file for coloc!
-# **** take genome version into consideration????
+# THIS IS NOT PART OF GWAS ANNOTATION PIPELINE You need to create the input file for GWASAnnotation
+# You need to create the input file for GWASAnnotation before running the pipeline. Use this code as help only
 ##################################################################
 
 suppressMessages(library(readxl))
@@ -38,8 +31,7 @@ cat("genome build: ", genome_build,  "\n")
 if(genome_build=="hg37"){
     cat("\n## LiftOver sumstats to hg38 (using genepi_liftOver function) ##  \n")
     sumstats_liftOver <- genepi_liftOver(sumstats, CHR_name = "CHROM", POS_name ="GENPOS", A1_name= "ALLELE1", A2_name= "ALLELE0",
-                                liftOver_bin = "/scratch/global/martins/liftover/liftOver", liftOver_chain_hg19ToHg38 = "/scratch/global/martins/liftover/hg19ToHg38.over.chain.gz", dbSNP_file="/data/public_resources/Ensembl_human_variation_b38_v109/dbSNP_v156_b38p14_rsid.vcf.gz", tabix_bin="tabix",
-                                unique_ID_name="unique_ID",
+                                liftOver_bin = "/scratch/global/martins/liftover/liftOver", liftOver_chain = "/scratch/global/martins/liftover/hg19ToHg38.over.chain.gz", dbSNP_file="/data/public_resources/Ensembl_human_variation_b38_v109/dbSNP_v156_b38p14_rsid.vcf.gz", tabix_bin="/usr/bin/tabix",
                                 mc_cores=8, keep_lower=F, do_soring=T, rm_tmp_liftOver=T, do_Name_by_position=F)
 
    sumstats_liftOver$Name_hg38 <- paste0("chr", sumstats_liftOver$CHR_hg38, ":", sumstats_liftOver$POS_hg38,":", sumstats_liftOver$A2_hg38, ":",sumstats_liftOver$A1_hg38)
@@ -64,7 +56,7 @@ if(genome_build=="hg37"){
 
  
   #### save hg38 file
-  cat("number of SNPs in hg38", nrow(sumstats_1))
+  cat("number of SNPs in hg38", nrow(sumstats_1),"\n ")
   #Name is for coloc - use inverted name
   #rsID is for eveything else - use normal name that fits ld ref
   sumstats_1$rsID <- sumstats_1$Name
@@ -80,6 +72,7 @@ if(genome_build=="hg37"){
   
   write.table(sumstats_1, paste0(opt$output_path,"_liftOver_hg38.txt"), row.names=F, col.names=T, sep="\t", quote=F)
   saveRDS(sumstats_1, paste0(opt$output_path, "_liftOver_hg38.RDS"))
+  cat("RDS saved in ", paste0(opt$output_path, "_liftOver_hg38_dedup.RDS"))
   saveRDS(unique_rows, paste0(opt$output_path, "_liftOver_hg38_dedup.RDS"))
 
 }else{

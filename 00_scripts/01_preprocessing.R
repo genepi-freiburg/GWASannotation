@@ -15,12 +15,35 @@ sumstats <- readRDS(GWAS_RDS)
 
 print("head gwas")
 head(sumstats)
+table(sumstats$Name == sumstats$rsID)
 
+#To make sure that name match the coloc datasets names
+sumstats_name <- Name_by_position(sumstats=sumstats,
+                                   CHR_name="CHR",
+                                   POS_name="POS",
+                                   A1_name="A1",
+                                   A2_name="A2",
+                                   tabix_bin="tabix",
+                                   dbSNP_file="/data/public_resources/Ensembl_human_variation_b38_v109/dbSNP_v156_b38p14_rsid.vcf.gz")
+
+
+table(sumstats_name$Name == sumstats_name$Name_hg38)
+length(unique(sumstats_name$Name_hg38))
+
+dim(sumstats_name[duplicated(sumstats_name$Name_hg38)])
+setDT(sumstats_name)
+sumstats[sumstats_name, on = "rsID", Name := i.Name_hg38]
+dim(sumstats[duplicated(sumstats$Name)])
+sumstats <- sumstats %>%
+  group_by(Name) %>%
+  slice(which.max(nlog10P)) %>%
+  ungroup()
+print("Name == rsID")
+table(sumstats$Name == sumstats$rsID)
 
 #####################################
 # loci regions - using function from coloc
 cat("\n## Defining significant loci (regions around 500kb of the lead SNP) ##  \n")
-
 regions_list <- get_coloc_regions(sumstats, nlogP_threshold = GWAS_max_nlog10P_thresh, halfwindow = 500000)
 
 regions <- regions_list$coloc_regions
@@ -29,26 +52,33 @@ cat(paste0(nrow(regions)), " loci identified \n")
 
 regions_log <- regions_list$regions_log
 sumstats_filt <- regions_list$sumstats_filt
-head(sumstats_filt)
-#sumstats_filt <- subset_sumstats(sumstats, regions)
-# Save
-writeLines(regions_log, con = paste0(output_path, "_get_coloc_regions_log.txt"))
-saveRDS(sumstats_filt, paste0(output_path, "_subset.RDS")) #not needed?
+#head(sumstats_filt)
 
-save_coloc_regions(regions_list, output_path, sumstats_1_type=sumstats_type)
+# Save log and filtered summary statistics
+writeLines(regions_log, con = paste0(output_path, "_get_coloc_regions_log.txt"))
+saveRDS(sumstats_filt, paste0(output_path, "_subset.RDS"))
+
+#Following code substitute:
+#save_coloc_regions(regions_list, output_path, sumstats_1_type=sumstats_type)
+write.table(regions, paste0(output_path, "_coloc_regions_PASS.tsv"),
+            sep = "\t", row.names = FALSE, col.names = TRUE, quote = FALSE)
+
+write.table(sumstats_filt, paste0(output_path, "_subset.tsv"),
+            sep = "\t", row.names = FALSE, col.names = TRUE, quote = FALSE)
+
+system(paste0("bgzip -f ", output_path, "_subset.tsv"))
+system(paste0("tabix -f -s3 -b4 -e4 ", output_path, "_subset.tsv.gz -c Name"))
+##
 
 saveRDS(regions_list, paste0(output_path, "_coloc_regions.RDS"))
 
 #####################################
 # lead file
 cat("\n## Creating lead file ## \n")
-#3.1. A tab-separated .txt file containing rsIDs, chromosomes, and GRCh37 coordinates (both start and end) of your lead variants of interest across four columns with the below column names. In cases where there is no rsID for a lead variant then the notation "chr:start" should be used (i.e., 1:11856378).
+#3.1. A tab-separated .txt file containing rsIDs, chromosomes, and GRCh38 coordinates (both start and end) of your lead variants of interest across four columns with the below column names. In cases where there is no rsID for a lead variant then the notation "chr:start" should be used (i.e., 1:11856378).
 tophit=regions
 
 tophit$strand <- "+"
-#tophit$rsID <- paste(tophit$CHROM, tophit$POS, sep = ":")
-
-#tophit$allele <- paste(tophit$A1, tophit$A2, sep = "/")
 
 # If theres no rsID, create "chr:start" annotation
 tophit<- tophit %>%
@@ -127,6 +157,7 @@ print(head(proxy_data))
 write.table(proxy_data, file= paste0(output_path, "_proxies.txt"), quote = FALSE, sep = "\t",
     row.names = FALSE, col.names = TRUE)
 
+
 #FOR VEP ANALYSIS NEED TO CHECK ALLELE POSITION BASED ON dbSNP - use
 #Name_by_position(sumstats, tmp_name=NULL,CHR_name="CHR_hg38", POS_name="POS_hg38",A1_name="A1_hg38", A2_name="A2_hg38",Name_out="Name_hg38", rs_name="rs",unique_ID_name="unique_ID",tabix_bin, dbSNP_file,do_soring=T, mc_cores=4)
 
@@ -139,13 +170,15 @@ write.table(proxy_data, file= paste0(output_path, "_proxies.txt"), quote = FALSE
 #ld_results2$allele <- paste(ld_results2$ref, ld_results2$alt, sep = "/") #A2 is reference
 
 vep_data <- ld_results[,c("CHR_B", "BP_B", "END", "allele", "strand", "SNP_B")]
-cat("head vep input file \n")
-head(vep_data)
-#vep <- separate(vep, Allele, into = c("ref", "alt"), sep = "/")
+##!VEP used "X" instead of "23"
+vep_data$CHR_B[vep_data$CHR_B == "23"] <- "X"
 
+cat("head vep input file \n")
+print(head(vep_data))
+#vep <- separate(vep, Allele, into = c("ref", "alt"), sep = "/")
 
 write.table(vep_data, file = paste0(output_path, "_proxies_vep.txt"), quote = FALSE, sep = "\t",
         row.names = FALSE, col.names = FALSE)
 
 
-cat("\n## Pre-processing finished ##\n")
+#cat("\n## Pre-processing finished ##\n")

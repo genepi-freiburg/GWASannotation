@@ -10,7 +10,7 @@ regions.file=paste0(input_path, "_coloc_regions.RDS")
 inc.datasets <- datasets_coloc
 print(inc.datasets)
 merge_coloc_lead <- function(coloc_path, dataset, regions.file, tophit.file) {
-    summary.file <- paste0(coloc_path, dataset, ".RDS")
+    summary.file <- paste0(coloc_path, dataset, "_annot_unfilt.RDS")
     # Check if files exist
     if (!file.exists(summary.file) | !file.exists(regions.file) | !file.exists(tophit.file)) {
         stop("One or more files do not exist.")
@@ -25,7 +25,7 @@ merge_coloc_lead <- function(coloc_path, dataset, regions.file, tophit.file) {
     tophit <- tophit[, c("rsID", "CHR", "START")]
     colnames(tophit) <- c("rsID", "CHR_var", "snpPOS")
     
-    summary <- summary[!is.na(summary$PP.H4.abf) & summary$PP.H4.abf > 0.5, ]
+    summary <- summary[!is.na(summary$PP.H4.abf) & summary$PP.H4.abf > eqtl_PP.H4.abf_thresh, ]
     cat("nr of rows with PP.H4 > ", eqtl_PP.H4.abf_thresh," : ", nrow(summary), "\n")
     
     # Merge coloc results with regions to get rsID
@@ -42,6 +42,7 @@ process_dataset_eQTL <- function(coloc_path, dataset, regions.file, tophit.file)
     inc.cols <- c("rsID","trait", "Name", "sumstats_2_max_nlog10P", "PP.H4.abf")
     inc.cols2 <- c("_Tissue", "_gene_id", "_gene_type", "_gene_name", "_cis_trans")
     print(dataset)
+    
     data <- merge_coloc_lead(coloc_path, dataset, regions.file, tophit.file)
     if(nrow(data>0)){
         data$trait=dataset
@@ -57,6 +58,10 @@ process_dataset_eQTL <- function(coloc_path, dataset, regions.file, tophit.file)
         data <- data[data$cis_trans =="cis", ]
         data <- data[complete.cases(data$gene_id), ]
         print(dim(data))
+        # Modify "_Tissue" column for eQTLGen dataset
+        if (dataset == "eQTLGen_Tissue") {
+            data$Tissue <- "eQTLGen_blood"
+        }
         return(data)
     }
 }

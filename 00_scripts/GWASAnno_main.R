@@ -1,3 +1,5 @@
+#update July 2025 - add chr x
+
 ### IMPORT RELEVANT PACKAGES
 library(GenomicAlignments)
 library(GenomicFeatures)
@@ -10,10 +12,7 @@ library(writexl)
 library(dplyr)
 library(biomaRt)
 
-devtools::load_all("/data/programs/pipelines/genepicoloc/genepicoloc_package")
-sapply(list.files("/data/programs/pipelines/genepicoloc/custom_scripts/source", full.names = T), source)
-#devtools::load_all("/data/programs/pipelines/genepicoloc/custom_scripts/genepicoloc_dev")
-#sapply(list.files("/data/programs/pipelines/genepicoloc/custom_scripts/genepicoloc_dev/source", full.names = T), source)
+devtools::load_all("/data/programs/pipelines/genepicoloc/source_package/genepicolocGWASAnnotation")
 
 suppressMessages(library(optparse))
 cat("\nImported required packages.\n")
@@ -63,11 +62,10 @@ dir.create(output_dir)
 eQTLdata_dir <- "/data/public_resources/GTeX/eQTLs/V8/GTEx_Analysis_v8_eQTL"
 
 # File containing reference genes:
-gene_model_filename <- "/data/programs/bin/gwas/PRoGeM/GRCh38_genes.RData"                            # default provided.
+gene_model_filename <- "/data/programs/bin/gwas/PRoGeM/GRCh38_genes.RData"
 
-#Proxies identification
+#Used for proxies identification
 bfile=opt$bfile
-#bfile="/data/studies/06_UKBB/01_Data/02_Genetic_Data/UKBB_MRI_38k_MAF001/plink/chrpos/hg38/UKBB_MRI_38k_MAF001_hg38_allchr"
 
 #Coloc datasets
 possible_eQTL_dataset <- c("GTEXv8", "Kidney_eQTL", "eQTLGen")
@@ -91,9 +89,8 @@ datasets_coloc=c(eQTL_datasets_coloc, pQTL_datasets_coloc)
 print("datsets used for coloc")
 print(datasets_coloc)
 #tissues of interest - needs a couple of CHECKS!!!!
-#eQTL_tissues_interest_coloc <- c("Kidney_Cortex", "Spleen", "Whole_Blood", "Kidney_eQTL.TubsigeQTLs", "Kidney_eQTL.GlomsigeQTLs", "Kidney_eQTL_Meta_S686_Significant.q0.01", "CXTubsigeQTLs", "CXGlomsigeQTLs") ###################
+#eQTL_tissues_interest_coloc <- c("Kidney_Cortex", "Liver", "Whole_Blood", "Kidney_eQTL.TubsigeQTLs", "Kidney_eQTL.GlomsigeQTLs", "Kidney_eQTL_Meta_S686_Significant.q0.01", "CXTubsigeQTLs", "CXGlomsigeQTLs") ###################
 tissues_interest <- unlist(strsplit(opt$eQTL_tissues_interest_coloc, ","))
-#tissues_interest <- eQTL_tissues_interest_coloc
 
 if(is.na(opt$coloc_input_path)){
     coloc_path <- paste0(folder_path, "/coloc/output/")   
@@ -101,7 +98,7 @@ if(is.na(opt$coloc_input_path)){
     files <- list.files(opt$coloc_input_path, pattern = "\\.RDS$")
     files <- files[!grepl("summary\\.RDS$", files)]
 
-    if (all(paste0(datasets_coloc, ".RDS") %in% files)) {
+    if (all(paste0(datasets_coloc, "_annot_unfilt.RDS") %in% files)) {
       cat("Coloc folder provided contains all selected QTL datasets \n")
     } else {
       cat("Coloc folder provided does not contain the selected QTL datasets \n")
@@ -131,10 +128,9 @@ interval_kb <- opt$interval_window_kb
 LD_region_overhang_kb <- opt$LD_region_overhang_kb	# default is 5kb.
 
 # Number of nearest genes that reside nearest to the lead variant:
-number_of_nearest <- 3		# default is 3.
+number_of_nearest <- 3
 
 # Biotype(s) of candidate genes:
-# further information: http://vega.archive.ensembl.org/info/about/gene_and_transcript_types.html
 biotype_of_interest <- "protein_coding"
 
 # Column indices in the VEP output that contain the following information:
@@ -145,7 +141,7 @@ IMPACT_column <- 14
 
 # Tissue(s) of interest for GTEx eQTL data set:
 GTEx_tissues <- dir(eQTLdata_dir)[grep("signif_variant_gene_pairs", dir(eQTLdata_dir))]
-tissues_of_interest <- GTEx_tissues     # all tissues.
+tissues_eQTL_associations <- GTEx_tissues     # all tissues.
 
 # Column indices and threshold in the COLOC eQTL file
 coloc_eqtl_lead_rsID_col <- 1
@@ -154,13 +150,26 @@ coloc_eqtl_ensembl_gene_id_col <- 7
 # lead of the tissue column
 eqtl_tissue_col <- 6
 
-# Only these tissues will be considered
-# Reformat the tissues_of_interest from GTEx eQTL lookup above and include
-tissues_of_interest.short <-sub(pattern=".v8.signif_variant_gene_pairs.txt.gz",
+# Only these tissues will be considered for eQTL_tissues_interest_coloc
+# Reformat the tissues_eQTL_associations from GTEx eQTL lookup above and include
+tissues_interest.short <-sub(pattern=".v8.signif_variant_gene_pairs.txt.gz",
                                 replacement="", x=GTEx_tissues, fixed=TRUE)
-eqtl_tissues_of_interest <- c(tissues_of_interest.short,
+eqtl_tissues_of_interest <- c(tissues_interest.short,
                               "Kidney_eQTL.GlomsigeQTLs", "Kidney_eQTL_Meta_S686_Significant.q0.01",
-                              "Kidney_eQTL.TubsigeQTLs")
+                              "Kidney_eQTL.TubsigeQTLs", "CXTubsigeQTLs", "CXGlomsigeQTLs","eQTLGen_blood")
+
+#Check if eQTL_tissues_interest_coloc selected exist in the database
+if (all(is.na(tissues_interest))) {
+    cat("No tissues selected (NA detected)\n")
+} else if (all(tissues_interest %in% eqtl_tissues_of_interest)) {
+    cat("Valid tissue selection:\n")
+    print(tissues_interest)
+} else {
+    cat("--eQTL_tissues_interest_coloc selection is not valid \n")
+    cat("Available eQTL_tissues_interest_coloc are:", paste(eqtl_tissues_of_interest, collapse = ", "), "\n")
+    stop("Aborting pipeline due to eQTL_tissues_interest_coloc selection")
+}
+
 
 eqtl_sumstats_2_max_nlog10P_col <- 4
 # If set, sumstats_2_max_nlog10P will be filtered for > this threshold
@@ -184,7 +193,7 @@ pqtl_cis_trans_col <- 7
 pqtl_cis_trans_sel <- c("cis")
 
 #------------------------------------------------------------------------------------------------------
-## 4. EXECUTE ALL
+# 4. EXECUTE ALL
 
 cat("##################################################\n######## STEP1: Performing pre-processing ########\n ################################################## \n")
 start_time1 <- Sys.time()
@@ -231,7 +240,7 @@ if (is.na(opt$coloc_input_path)){
     cat("########################################################\n###### STEP3: Performing eQTL and pQTL colocalization ######\n################################################## \n")
     start_time3 <- Sys.time()
     source(paste0(script_path,"/03_coloc.R"))
-    
+
     end_time3 <- Sys.time()
     execution_time_seconds <- as.numeric(difftime(end_time3, start_time3, units = "secs"))
     execution_time_minutes <- execution_time_seconds / 60
@@ -243,7 +252,7 @@ if (is.na(opt$coloc_input_path)){
     coloc_path <- opt$coloc_input_path
 }
 
-if (file.exists(paste0(coloc_path,"/",datasets_coloc[1], ".RDS"))) {
+if (file.exists(paste0(coloc_path,"/",datasets_coloc[1], "_annot_unfilt.RDS"))) {
     cat("########################################################\n###### STEP4: Prepare coloc QTL results for Annotation ###### \n######################################################## \n")
     start_time6 <- Sys.time()
     source(paste0(script_path,"/04_prepare_QTL.R"))
@@ -257,7 +266,7 @@ if (file.exists(paste0(coloc_path,"/",datasets_coloc[1], ".RDS"))) {
     rm(execution_time_seconds)
     rm(execution_time_minutes)
     } else {
-    stop("Output file of 05_coloc.R does not exist. Aborting the pipeline.")
+    stop("Output file of 03_coloc.R does not exist. Aborting the pipeline.")
 }
 
 if (file.exists(paste0(coloc_path,"input_Anno_eQTL.txt")) &
@@ -295,9 +304,9 @@ if (file.exists(paste0(output_dir,"OUTPUT_anno_summary.txt"))) {
   cat("##################################################\n###### STEP6: Pos-processing Annotation results (include scoring) ###### \n################################################## \n")
   start_time6 <- Sys.time()
   rm(opt)
-  
+
   source(paste0(script_path,("/06_postprocessing.R")))
-  
+
   end_time6 <- Sys.time()
   execution_time_seconds <- as.numeric(difftime(end_time6, start_time6, units = "secs"))
   # Convert seconds to minutes
@@ -319,4 +328,5 @@ cat(sprintf("Pipeline took %.2f minutes\n", execution_time_minutes), "\n\n")
 #rm(execution_time_seconds)
 #rm(execution_time_minutes)
 #system("rm $TEMP_SYMLINK")
+
 cat("##################################################\n############### Pipeline complete! ############### \n################################################## \n")
