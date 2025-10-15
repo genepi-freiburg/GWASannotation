@@ -1,5 +1,10 @@
 ## GOAL: prioritize the most probable causal genes for each independent GWAS association signal
-This annotation pipeline integrates multiple lines of evidence, building upon and enhancing the ProGeM framework (Stacey et al. 2019). Our approach incorporates gene proximity, functional variant annotations using Ensembl 101 Variant Effect Predictor (VEP) (McLaren et al. 2016), genetic colocalization with expression and protein quantitative trait loci (eQTL and pQTL), and linkage disequilibrium (LD)-based gene overlap, to generate a comprehensive scoring system for gene prioritization. 
+This annotation pipeline integrates multiple lines of evidence, building upon and enhancing the ProGeM framework (Stacey et al. 2019). Our approach incorporates gene proximity, functional variant annotations using Ensembl 101 Variant Effect Predictor (VEP) (McLaren et al. 2016), genetic colocalization with expression and protein quantitative trait loci (eQTL and pQTL), and linkage disequilibrium (LD)-based gene overlap, to generate a comprehensive scoring system for gene prioritization.  
+
+**Further information can be found in this publication:**  
+Monteiro-Martins S, , et al. Genetic screens of imaging-derived kidney volumes identify genes linked to kidney function. Kidney Int. 2025 Oct 10;S0085-2538(25)00781-1.  
+[PMID: 41077127](https://www.kidney-international.org/article/S0085-2538(25)00781-1/fulltext)  
+
 
 **R packages used**
 - GenomicAlignments
@@ -13,7 +18,7 @@ This annotation pipeline integrates multiple lines of evidence, building upon an
 - dplyr
 - biomaRt
 - optparse
-- genepicoloc
+- genepicoloc (currently only available internally)
   
 _*INTERNAL: The pipeline works with my version of R. Feel free to use it: /scratch/global/martins/R-4.4.1/bin/R_
 
