@@ -1,0 +1,252 @@
+[33mcommit 10120b02f75fc9331482e79a25fe1c916e859697[m[33m ([m[1;36mHEAD -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m
+Author: saramonteiromartins <sara.monteiro.martins@uniklinik-freiburg.de>
+Date:   Tue Sep 30 14:48:02 2025 +0200
+
+    Update pipeline from dev
+
+[33mcommit 799a79d060e79996f94680700ddb34c209762f87[m[33m ([m[1;31morigin/temp-merge[m[33m, [m[1;31mdev_repo/main[m[33m)[m
+Author: Sara Monteiro Martins <sara.monteiro.martins@uniklinik-freiburg.de>
+Date:   Mon Sep 9 14:46:37 2024 +0200
+
+    Update README.md
+    
+    update new optional parameters and description
+
+[33mcommit c4056e0d6bd7e1012ca75c7d9309afe72961b123[m
+Author: saramonteiromartins <sara.monteiro.martins@uniklinik-freiburg.de>
+Date:   Mon Sep 9 14:34:35 2024 +0200
+
+    Removed magma and pops, updated variable names, add sumstats threshold option, add relative paths
+
+[33mcommit d044be13d123c3fc4ba4b0181cb8f189db0db2a0[m
+Author: saramonteiromartins <sara.monteiro.martins@uniklinik-freiburg.de>
+Date:   Mon Aug 5 17:05:31 2024 +0200
+
+    corrected VEP collumn and eQTL list
+
+[33mcommit dc03775c32e13261708cd0252ca5b44f4f2c4edb[m
+Author: saramonteiromartins <sara.monteiro.martins@uniklinik-freiburg.de>
+Date:   Fri May 24 14:03:25 2024 +0200
+
+    Update May 2024
+
+[33mcommit 5b81ae681a9f21b878583fcb05d962f0ffb57497[m
+Author: Sara Monteiro Martins <sara.monteiro.martins@uniklinik-freiburg.de>
+Date:   Mon Apr 8 19:28:50 2024 +0200
+
+    Update README.md
+
+[33mcommit 993b97a46b90d0c3042c3555da28735a5b96586d[m
+Author: saramonteiromartins <sara.monteiro.martins@uniklinik-freiburg.de>
+Date:   Mon Apr 8 19:18:21 2024 +0200
+
+    update_04April2024
+
+[33mcommit 684ac404bc09591d4082834e26e160aa2c5cd14a[m
+Author: Sara Monteiro Martins <sara.monteiro.martins@uniklinik-freiburg.de>
+Date:   Mon Apr 8 17:44:53 2024 +0200
+
+    Delete 00_scripts/05_coloc copy.R
+
+[33mcommit 01adb0aafefbc05d4f5abad79f82049ae53ce3ad[m
+Author: Sara Monteiro Martins <sara.monteiro.martins@uniklinik-freiburg.de>
+Date:   Mon Apr 8 17:41:39 2024 +0200
+
+    Update 02_vep.sh
+
+[33mcommit 33a6905c6e41c6ab27e40746232ed661cdea8188[m
+Author: Sara Monteiro Martins <sara.monteiro.martins@uniklinik-freiburg.de>
+Date:   Mon Apr 8 17:36:59 2024 +0200
+
+    Delete 00_scripts/00_process_sumstats.R
+
+[33mcommit 63695ca8cd51a26696e578b7433b2d77dfe08b37[m
+Author: Sara Monteiro Martins <sara.monteiro.martins@uniklinik-freiburg.de>
+Date:   Mon Apr 8 17:36:15 2024 +0200
+
+    Update 08_postprocessing_ProGeM.R
+
+[33mcommit 804b7372da04c65ffac708621883aa7e0cc5ce0d[m
+Author: Sara Monteiro Martins <sara.monteiro.martins@uniklinik-freiburg.de>
+Date:   Mon Apr 8 17:35:27 2024 +0200
+
+    Update README.md
+
+[33mcommit 2488b6695324ef54f9752dedd10889948122577a[m
+Author: Sara Monteiro Martins <sara.monteiro.martins@uniklinik-freiburg.de>
+Date:   Mon Apr 8 17:29:51 2024 +0200
+
+    Update 08_postprocessing_ProGeM.R
+
+[33mcommit 20ebb0fdfca7e7ac18fc400e44e48a2de3c00309[m
+Author: Sara Monteiro Martins <sara.monteiro.martins@uniklinik-freiburg.de>
+Date:   Mon Apr 8 17:25:40 2024 +0200
+
+    Update 08_postprocessing_ProGeM.R
+
+[33mcommit 9708c3ecb833aa2000bf996f6b85b476d674a648[m
+Author: saramonteiromartins <sara.monteiro.martins@uniklinik-freiburg.de>
+Date:   Mon Apr 8 17:21:38 2024 +0200
+
+    updates_08April2024
+
+[33mcommit 0e61ff1b7e604363adfabf2ebe7a6f1563961792[m
+Merge: 87c3e65 a79eafc
+Author: saramonteiromartins <sara.monteiro.martins@uniklinik-freiburg.de>
+Date:   Mon Apr 8 15:57:35 2024 +0200
+
+    Merge branch 'main' of https://github.com/genepi-freiburg/GWASannotation into main
+
+[33mcommit 87c3e652dbe069dd9fe258c55413fc1f8eb3d61f[m
+Author: saramonteiromartins <sara.monteiro.martins@uniklinik-freiburg.de>
+Date:   Mon Apr 8 15:56:57 2024 +0200
+
+    08April2024
+
+[33mcommit a79eafc899ea27576d372a7d4775e1c1cda3ca56[m
+Author: Sara Monteiro Martins <sara.monteiro.martins@uniklinik-freiburg.de>
+Date:   Sat Mar 2 10:55:03 2024 +0100
+
+    Update README.md
+
+[33mcommit 9e1e686f3a6281fc24d723a3f3afc1adb4c787d3[m
+Author: Sara Monteiro Martins <sara.monteiro.martins@uniklinik-freiburg.de>
+Date:   Sat Mar 2 10:47:20 2024 +0100
+
+    Rename README.txt to README.md
+
+[33mcommit 865e721dd65c9f5b2c624d9492c77fde85974e3a[m
+Merge: c477268 b5b2952
+Author: saramonteiromartins <sara.monteiro.martins@uniklinik-freiburg.de>
+Date:   Sat Mar 2 10:44:22 2024 +0100
+
+    Merge branch 'main' of https://github.com/genepi-freiburg/GWASannotation into main
+
+[33mcommit c477268d35a139fda16fa9b07d30082d23887eed[m
+Author: saramonteiromartins <sara.monteiro.martins@uniklinik-freiburg.de>
+Date:   Sat Mar 2 10:44:04 2024 +0100
+
+    edit README
+
+[33mcommit b5b29523c7da970af53718eda16ba0f6377a930f[m
+Author: Sara Monteiro Martins <sara.monteiro.martins@uniklinik-freiburg.de>
+Date:   Sat Mar 2 10:35:26 2024 +0100
+
+    Delete 04_utils/._.DS_Store
+    
+    delete temp files
+
+[33mcommit 66996fb4eeb5bfe15a224d2162c96da4d7bc43b5[m
+Author: Sara Monteiro Martins <sara.monteiro.martins@uniklinik-freiburg.de>
+Date:   Sat Mar 2 10:35:10 2024 +0100
+
+    Delete 04_utils/._ProGeM_functions.R
+    
+    delete temp files
+
+[33mcommit 0946041952b7ff01ace6d0954e6c6d3b677057d6[m
+Author: Sara Monteiro Martins <sara.monteiro.martins@uniklinik-freiburg.de>
+Date:   Sat Mar 2 10:34:44 2024 +0100
+
+    Delete 04_utils/.DS_Store
+    
+    delete temp files
+
+[33mcommit 0a552d5f1eb83bc6fde8b8b9387d1e6df93ba57a[m
+Author: saramonteiromartins <sara.monteiro.martins@uniklinik-freiburg.de>
+Date:   Sat Mar 2 10:33:52 2024 +0100
+
+    main R file created and first tests ran
+
+[33mcommit 6c48ce8385e88933d7ac72c5c70f273b9b577f07[m
+Author: saramonteiromartins <sara.monteiro.martins@uniklinik-freiburg.de>
+Date:   Sat Mar 2 10:32:46 2024 +0100
+
+    main R file created and first tests ran
+
+[33mcommit 10ea2ab2beb6eed1e4d94aab501b9bbb0a8b50a4[m
+Author: saramonteiromartins <sara.monteiro.martins@uniklinik-freiburg.de>
+Date:   Sat Mar 2 10:32:08 2024 +0100
+
+    main R file created and first tests ran
+
+[33mcommit da403623e9c0ee9c12c514d3875f26f51f4df814[m
+Author: saramonteiromartins <sara.monteiro.martins@uniklinik-freiburg.de>
+Date:   Sat Mar 2 10:27:11 2024 +0100
+
+    main R file created and first tests ran
+
+[33mcommit da5640c5221fdb5645b483fcf62336d98dc333a5[m
+Author: saramonteiromartins <sara.monteiro.martins@uniklinik-freiburg.de>
+Date:   Tue Feb 27 13:51:51 2024 +0100
+
+    remove tem files ._
+
+[33mcommit 150be2459d844869536471afd02bc4392e68c18e[m
+Author: saramonteiromartins <sara.monteiro.martins@uniklinik-freiburg.de>
+Date:   Tue Feb 27 13:50:37 2024 +0100
+
+    remove tem files ._
+
+[33mcommit da9f7e536b0868b59f00e7413a444c7fcc641614[m
+Merge: b9bc611 7c768a5
+Author: saramonteiromartins <sara.monteiro.martins@uniklinik-freiburg.de>
+Date:   Tue Feb 27 13:46:07 2024 +0100
+
+    Merge branch 'main' of https://github.com/genepi-freiburg/GWASannotation into main
+
+[33mcommit 7c768a5a6cda50513294495e32cfcb7e492706b9[m
+Author: Sara Monteiro Martins <sara.monteiro.martins@uniklinik-freiburg.de>
+Date:   Tue Feb 27 13:45:38 2024 +0100
+
+    Delete scripts directory
+
+[33mcommit b9bc611c7db35a0f541c0d142d6d1c95c60ef5af[m
+Author: saramonteiromartins <sara.monteiro.martins@uniklinik-freiburg.de>
+Date:   Tue Feb 27 13:44:44 2024 +0100
+
+    beta version -hg38
+
+[33mcommit 3f93e05e8aa5039d4ef16e1e377837909f4a5f4b[m
+Author: Sara Monteiro Martins <sara.monteiro.martins@uniklinik-freiburg.de>
+Date:   Tue Feb 27 11:46:09 2024 +0100
+
+    Delete 03_logs directory to upload up to date
+    
+    to upload up to date logs
+
+[33mcommit 86575bf0c121f880d4cca080a8181a4c5375e088[m
+Author: Sara Monteiro Martins <sara.monteiro.martins@uniklinik-freiburg.de>
+Date:   Fri Feb 16 17:06:55 2024 +0100
+
+    Update README.txt
+
+[33mcommit 52e1f98ab15d8bc8310c091cbad88228cc62a276[m
+Author: Sara Monteiro-Martins <sara.monteiro.martins@uniklinik-freiburg.de>
+Date:   Fri Feb 16 16:47:12 2024 +0100
+
+    Preprocessing, VEP and Pops scripts added
+
+[33mcommit ceb18c3a40e794f5184b3d8e4eb004b963d515f5[m
+Author: Sara Monteiro-Martins <sara.monteiro.martins@uniklinik-freiburg.de>
+Date:   Wed Jan 31 18:29:21 2024 +0100
+
+    deleted temp file
+
+[33mcommit d310fd8edda90f84540147774e7a0d5fe7d81457[m
+Author: Sara Monteiro-Martins <sara.monteiro.martins@uniklinik-freiburg.de>
+Date:   Wed Jan 31 18:10:35 2024 +0100
+
+    Preprocessing script added
+
+[33mcommit 94ea50eb46683328a7f36b51a033fa5c9f03b397[m
+Author: Sara Monteiro-Martins <sara.monteiro.martins@uniklinik-freiburg.de>
+Date:   Wed Jan 31 11:29:27 2024 +0100
+
+    First files added
+
+[33mcommit 4eb480a461c3c5764fd819e946da38a41875980f[m
+Author: Sara Patricia Monteiro Martins <martins@imbi.uni-freiburg.de>
+Date:   Wed Jan 31 11:26:47 2024 +0100
+
+    First files added
