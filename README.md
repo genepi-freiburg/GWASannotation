@@ -16,11 +16,12 @@ Monteiro-Martins S, et al. Genetic screens of imaging-derived kidney volumes ide
 - readxl
 - writexl
 - dplyr
-- biomaRt
 - optparse
 - genepicoloc (currently only available internally)
-  
-_*INTERNAL: The pipeline works with my version of R. Feel free to use it: /scratch/global/martins/R-4.4.1/bin/R_
+_*R version 4.6.0*_
+
+**VEP version 101**
+_*INTERNAL: VEP requires DBI! Please confirm you have DBI installed (you can check by typing perl -e 'use DBI')._
 
 **Analysis will be conducted in hg38!** 
 

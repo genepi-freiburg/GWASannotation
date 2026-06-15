@@ -1,3 +1,4 @@
+#update May 2026 - updated to work on imbi cluster
 #update July 2025 - add chr x
 
 ### IMPORT RELEVANT PACKAGES
@@ -5,14 +6,13 @@ library(GenomicAlignments)
 library(GenomicFeatures)
 library(GenomicRanges)
 library(parallel)
-library(coloc)
+#library(coloc)
 library(data.table)
 library(readxl)
 library(writexl)
 library(dplyr)
-library(biomaRt)
 
-devtools::load_all("/data/programs/pipelines/genepicoloc/source_package/genepicolocGWASAnnotation")
+devtools::load_all("/dsk/epidata/programs/pipelines/genepicoloc/source_package/genepicolocGWASAnnotation")
 
 suppressMessages(library(optparse))
 cat("\nImported required packages.\n")
@@ -34,7 +34,7 @@ option_list = list(
     make_option("--output_path", action="store", default=NA, type='character', help="output folder path [required]"),
     make_option("--sumstats_type", action="store", default="quant", type='character', help="GWAS summary type (default=quant)"),
     make_option("--GWAS_max_nlog10P_thresh", action="store", default=-log10(5e-8), type='numeric', help="GWAS summary statistics will be filtered for > this threshold  (default=-log10(5e-8))"),
-    make_option("--bfile", action="store", default="/data/studies/06_UKBB/01_Data/02_Genetic_Data/UKBB_150k_RandomSubset_Cleaned/hg38/UKBB_14k_hg38_chr1-22", type='character', help="bfile to use for selecting proxies (if not provided UKB_14K_hg38 will be used)"),
+    make_option("--bfile", action="store", default="/dsk/epidata/studies/06_UKBB/01_Data/02_Genetic_Data/UKBB_150k_RandomSubset_Cleaned/hg38/UKBB_14k_hg38_chr1-22", type='character', help="bfile to use for selecting proxies (if not provided UKB_14K_hg38 will be used)"),
     make_option("--r2_thresh", action="store", default=0.8, type='numeric', help="Threshold for r2 values - used for proxies identification (default=0.8)"),
     make_option("--eQTL_datasets_coloc", action="store", default="GTEXv8", type='character', help="comma separated eQTL datasets to use for coloc (default=GTEXv8"),
     make_option("--eQTL_tissues_interest_coloc", action="store", default=NA, type='character', help="comma separated tissues of interest to be selected from the eQTL datasets -check 04_utils/tissues_eQTL.txt"),
@@ -54,15 +54,15 @@ opt = parse_args(OptionParser(option_list=option_list))
 ## 1. DIRECTORIES AND FILES
 
 folder_path <- dirname(opt$output_path)
-#folder_path <- dirname("/data/studies/06_UKBB/02_Projects/14_MRI-kidney/02_output/model1_qnorm_hilus.bsa_final_volume/GWAS_Annotation_MRI_38k_LD/cond_stats/snps_model1_qnorm_hilus.bsa_4_18751406_19751406_chr4:18938095:T:C/4:18938095:T:C")
+#folder_path <- dirname("/dsk/epidata/studies/06_UKBB/02_Projects/14_MRI-kidney/02_output/model1_qnorm_hilus.bsa_final_volume/GWAS_Annotation_MRI_38k_LD/cond_stats/snps_model1_qnorm_hilus.bsa_4_18751406_19751406_chr4:18938095:T:C/4:18938095:T:C")
 output_dir <- paste0(folder_path, "/GWASAnno/")
 dir.create(output_dir)
 
 # Directory for GTEx eQTL data set:
-eQTLdata_dir <- "/data/public_resources/GTeX/eQTLs/V8/GTEx_Analysis_v8_eQTL"
+eQTLdata_dir <- "/dsk/epidata/public_resources/GTeX/eQTLs/V8/GTEx_Analysis_v8_eQTL"
 
 # File containing reference genes:
-gene_model_filename <- "/data/programs/bin/gwas/PRoGeM/GRCh38_genes.RData"
+gene_model_filename <- "/dsk/epidata/programs/bin/gwas/PRoGeM/GRCh38_genes.RData"
 
 #Used for proxies identification
 bfile=opt$bfile
@@ -200,11 +200,11 @@ start_time1 <- Sys.time()
 output_path <- opt$output_path
 GWAS_RDS <- opt$GWAS_RDS
 
-#source("/data/programs/pipelines/GWASannotation/00_scripts/01_preprocessing.R")
 source(paste0(script_path,"/01_preprocessing.R"))
 end_time1 <- Sys.time()
 
 execution_time_seconds <- as.numeric(difftime(end_time1, start_time1, units = "secs"))
+
 # Convert seconds to minutes
 execution_time_minutes <- execution_time_seconds / 60
 # Print the execution time
@@ -220,7 +220,7 @@ if (file.exists(paste0(output_path,"_subset.tsv.gz")) &
   cat("##################################################\n################# STEP2: run VEP ################# \n################################################## \n")
   input_vep=paste0(output_path,"_proxies_vep.txt")
   start_time2 <- Sys.time()
-  #system(paste0("/data/programs/pipelines/GWASannotation/00_scripts/02_vep.sh ",input_vep))
+  #system(paste0("/dsk/epidata/programs/pipelines/GWASannotation/00_scripts/02_vep.sh ",input_vep))
   system(paste0(script_path,"/02_vep.sh ",input_vep))
   end_time2 <- Sys.time()
 
@@ -235,6 +235,7 @@ if (file.exists(paste0(output_path,"_subset.tsv.gz")) &
   # If output file doesn't exist, print an error message and abort the pipeline
   stop("Output file of 01_preprocessing.R does not exist. Aborting the pipeline.")
 }
+
 
 if (is.na(opt$coloc_input_path)){
     cat("########################################################\n###### STEP3: Performing eQTL and pQTL colocalization ######\n################################################## \n")
@@ -330,3 +331,4 @@ cat(sprintf("Pipeline took %.2f minutes\n", execution_time_minutes), "\n\n")
 #system("rm $TEMP_SYMLINK")
 
 cat("##################################################\n############### Pipeline complete! ############### \n################################################## \n")
+sessionInfo()

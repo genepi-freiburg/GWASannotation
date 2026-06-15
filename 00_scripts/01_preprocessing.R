@@ -12,10 +12,10 @@
 #####################################
 # load input file
 sumstats <- readRDS(GWAS_RDS)
-
+print(GWAS_RDS)
 print("head gwas")
-head(sumstats)
-table(sumstats$Name == sumstats$rsID)
+print(head(sumstats))
+print(table(sumstats$Name == sumstats$rsID))
 
 #To make sure that name match the coloc datasets names
 sumstats_name <- Name_by_position(sumstats=sumstats,
@@ -24,7 +24,7 @@ sumstats_name <- Name_by_position(sumstats=sumstats,
                                    A1_name="A1",
                                    A2_name="A2",
                                    tabix_bin="tabix",
-                                   dbSNP_file="/data/public_resources/Ensembl_human_variation_b38_v109/dbSNP_v156_b38p14_rsid.vcf.gz")
+                                   dbSNP_file="/dsk/epidata//public_resources/Ensembl_human_variation_b38_v109/dbSNP_v156_b38p14_rsid.vcf.gz")
 
 
 table(sumstats_name$Name == sumstats_name$Name_hg38)
@@ -39,7 +39,7 @@ sumstats <- sumstats %>%
   slice(which.max(nlog10P)) %>%
   ungroup()
 print("Name == rsID")
-table(sumstats$Name == sumstats$rsID)
+print(table(sumstats$Name == sumstats$rsID))
 
 #####################################
 # loci regions - using function from coloc
@@ -113,8 +113,8 @@ cat("\n## Creating proxie file ## \n")
 #Getting proxy SNPs based on lead.txt file previously created
 #SnIPA uses hg37 - using plink for hg38
 #plink2 doesnt support --ld-snp-list, need to use plink1
-#if no bfile provided, will use /data/studies/06_UKBB/01_Data/02_Genetic_Data/UKBB_150k_RandomSubset_Cleaned/hg38/UKBB_14k_hg38_chr1-22
-system(paste0("/data/programs/bin/gwas/plink/plink-1.90_beta6.20/plink --bfile ", bfile, " --r2 with-freqs --ld-snp-list ", output_path, "_lead.txt --ld-window 1000000 --ld-window-kb 1000 --out ", output_path, "_ld_results"))
+#if no bfile provided, will use /dsk/epidata/studies/06_UKBB/01_Data/02_Genetic_Data/UKBB_150k_RandomSubset_Cleaned/hg38/UKBB_14k_hg38_chr1-22
+system(paste0("/dsk/epidata/programs/bin/gwas/plink/plink-1.90_beta6.20/plink --bfile ", bfile, " --r2 with-freqs --ld-snp-list ", output_path, "_lead.txt --ld-window 1000000 --ld-window-kb 1000 --out ", output_path, "_ld_results"))
 ld=read.table(paste0(output_path, "_ld_results.ld"),header=T)
 
 r2.cutoff <- r2_thresh 
